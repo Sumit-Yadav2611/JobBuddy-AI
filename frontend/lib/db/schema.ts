@@ -224,6 +224,24 @@ export const jobs = pgTable("jobs", {
 });
 
 /* =========================
+   JOB SKILLS
+========================= */
+
+export const jobSkills = pgTable("job_skills", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  jobId: uuid("job_id")
+    .notNull()
+    .references(() => jobs.id, {
+      onDelete: "cascade",
+    }),
+
+  name: text("name").notNull(),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+/* =========================
    SAVED JOBS
 ========================= */
 
@@ -248,7 +266,6 @@ export const savedJobs = pgTable("saved_jobs", {
 /* =========================
    APPLICATIONS
 ========================= */
-
 export const applications = pgTable("applications", {
   id: uuid("id").defaultRandom().primaryKey(),
 
@@ -273,4 +290,32 @@ export const applications = pgTable("applications", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/* =========================
+   JOB MATCH RESULTS
+========================= */
+
+export const jobMatches = pgTable("job_matches", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, {
+      onDelete: "cascade",
+    }),
+
+  jobId: uuid("job_id")
+    .notNull()
+    .references(() => jobs.id, {
+      onDelete: "cascade",
+    }),
+
+  score: real("score").notNull(),
+
+  matchedSkills: text("matched_skills"),
+
+  missingSkills: text("missing_skills"),
+
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
