@@ -1,3 +1,8 @@
+import dotenv from "dotenv";
+
+dotenv.config({
+  path: ".env.local",
+});
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 

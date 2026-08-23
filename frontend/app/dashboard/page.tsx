@@ -1,5 +1,6 @@
 import { auth,currentUser } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
+import RecommendedJobs from "@/components/dashboard/RecommendedJobs";
 
 
 import Sidebar from "@/components/dashboard/Sidebar";
@@ -7,6 +8,7 @@ import JobsSection from "@/components/dashboard/JobsSection";
 import ProfileCompleteness from "@/components/dashboard/ProfileCompleteness";
 
 import { syncUser } from "@/lib/db/user-sync";
+
 
 
 
@@ -105,9 +107,11 @@ export default async function DashboardPage() {
 
             {/* Profile Completeness */}
             <ProfileCompleteness />
+            
           </div>
 
           <JobsSection />
+          <RecommendedJobs />
         </main>
       </div>
     </div>
