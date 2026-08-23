@@ -23,7 +23,7 @@ export async function GET() {
       );
     }
 
-    // find database user
+    // Find database user
 
     const databaseUser = await db
       .select()
@@ -44,7 +44,7 @@ export async function GET() {
 
     const dbUser = databaseUser[0];
 
-    // get user skills
+    // Get user skills
 
     const userSkills = await db
       .select()
@@ -53,7 +53,7 @@ export async function GET() {
 
     const skillNames = userSkills.map((skill) => skill.name);
 
-    // get jobs
+    // Get jobs
 
     const allJobs = await db.select().from(jobs);
 
@@ -62,17 +62,48 @@ export async function GET() {
         const match = calculateJobMatch(skillNames, job.requirements);
 
         return {
-          ...job,
+          id: job.id,
+
+          title: job.title,
+
+          company: job.company,
+
+          location: job.location,
+
+          jobType: job.jobType,
+
+          platform: job.platform,
+
+          description: job.description,
+
+          // Matching data
 
           matchScore: match.score,
+
+          matchLevel: match.matchLevel,
 
           matchedSkills: match.matchedSkills,
 
           missingSkills: match.missingSkills,
+
+          // AI explanation
+
+          explanation: match.explanation,
+
+          url: job.url,
         };
       })
+
+      // remove jobs where matching is not possible
+
       .filter((job) => job.matchScore !== null)
+
+      // highest match first
+
       .sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0))
+
+      // only top 6 jobs
+
       .slice(0, 6);
 
     return NextResponse.json({

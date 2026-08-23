@@ -13,9 +13,16 @@ type Job = {
 
   matchScore: number;
 
+  matchLevel: string;
+
   matchedSkills: string[];
 
   missingSkills: string[];
+
+  explanation: {
+    strengths: string[];
+    improvements: string[];
+  };
 };
 
 export default function RecommendedJobs() {
@@ -59,12 +66,14 @@ shadow-sm
 rounded-xl
 bg-green-100
 px-4
-py-2
+py-3
 text-green-700
-font-bold
+text-center
 "
               >
-                {job.matchScore}%
+                <div className="text-xl font-bold">{job.matchScore}%</div>
+
+                <div className="text-xs font-medium">{job.matchLevel}</div>
               </div>
             </div>
 
@@ -111,6 +120,33 @@ text-gray-700
                     >
                       ○ {skill}
                     </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="mt-6">
+              <h4 className="font-semibold mb-3">
+                Why this job matches you 🧠
+              </h4>
+
+              <div className="space-y-2">
+                {job.explanation?.strengths.map((item) => (
+                  <p key={item} className="text-sm text-green-700">
+                    ✓ {item}
+                  </p>
+                ))}
+              </div>
+            </div>
+
+            {job.explanation?.improvements.length > 0 && (
+              <div className="mt-5">
+                <h4 className="font-semibold mb-3">Improve your chances 🚀</h4>
+
+                <div className="space-y-2">
+                  {job.explanation.improvements.map((item) => (
+                    <p key={item} className="text-sm text-gray-700">
+                      → {item}
+                    </p>
                   ))}
                 </div>
               </div>

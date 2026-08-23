@@ -14,6 +14,20 @@ const skillAliases: Record<string, string[]> = {
   cplusplus: ["c++", "cpp", "cplusplus"],
 };
 
+const skillWeights: Record<string, number> = {
+  react: 3,
+  typescript: 3,
+  javascript: 3,
+  node: 3,
+  mongodb: 2,
+  python: 3,
+  cplusplus: 2,
+  sql: 2,
+  git: 1,
+  html: 1,
+  css: 1,
+};
+
 function normalizeSkill(skill: string) {
   return skill
     .toLowerCase()
@@ -82,15 +96,64 @@ export function calculateJobMatch(
     }
   }
 
-  const score = Math.round(
-    (matchedSkills.length / jobRequirements.length) * 100,
-  );
+  let totalWeight = 0;
+  let matchedWeight = 0;
 
+  for (const requirement of jobRequirements) {
+    const canonical = getCanonicalSkill(requirement);
+
+    const weight = skillWeights[canonical] || 1;
+
+    totalWeight += weight;
+
+    if (matchedSkills.includes(requirement)) {
+      matchedWeight += weight;
+    }
+  }
+
+  const score = Math.round((matchedWeight / totalWeight) * 100);
+
+  let matchLevel = "Needs Improvement";
+
+  if (score >= 90) {
+    matchLevel = "Excellent Match";
+  } else if (score >= 70) {
+    matchLevel = "Good Match";
+  } else if (score >= 50) {
+    matchLevel = "Average Match";
+  }
+
+  const strengths: string[] = [];
+  const improvements: string[] = [];
+
+  if (matchedSkills.length > 0) {
+    strengths.push(`You match ${matchedSkills.length} required skills`);
+  }
+
+  for (const skill of matchedSkills) {
+    const canonical = getCanonicalSkill(skill);
+
+    if (["react", "typescript", "javascript"].includes(canonical)) {
+      strengths.push(`Strong ${skill} knowledge`);
+    }
+
+    if (["node", "mongodb"].includes(canonical)) {
+      strengths.push(`${skill} experience matches the role`);
+    }
+  }
+
+  for (const skill of missingSkills) {
+    improvements.push(`Learn ${skill} to improve your chances`);
+  }
   return {
     score,
-
+    matchLevel,
     matchedSkills,
-
     missingSkills,
+
+    explanation:{
+    strengths,
+    improvements
+  }
   };
 }
