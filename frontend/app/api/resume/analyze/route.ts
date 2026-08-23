@@ -13,7 +13,7 @@ import {
   projects,
 } from "@/lib/db/schema";
 
-import { analyzeResume } from "@/lib/resume/analyzeResume";
+import { analyzeResume, normalizeSkills } from "@/lib/resume/analyzeResume";
 
 export const runtime = "nodejs";
 
@@ -109,6 +109,7 @@ export async function POST(request: Request) {
 
     const analysis = await analyzeResume(resume.extractedText);
 
+    const normalizedSkills = normalizeSkills(analysis.skills);
     await db
       .update(profiles)
       .set({
@@ -128,10 +129,9 @@ export async function POST(request: Request) {
     /* =========================
    SAVE SKILLS
 ========================= */
-
-    if (analysis.skills.length > 0) {
+    if (normalizedSkills.length > 0) {
       await db.insert(skills).values(
-        analysis.skills.map((skill) => ({
+        normalizedSkills.map((skill) => ({
           userId: dbUser.id,
           name: skill.name,
           category: skill.category,

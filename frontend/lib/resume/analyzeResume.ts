@@ -1,13 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
 
+export type ExtractedSkill = {
+  name: string;
+  category: string;
+  proficiency: string;
+};
+
 export type ResumeAnalysis = {
   summary: string;
 
-  skills: {
-    name: string;
-    category: string;
-    proficiency: string;
-  }[];
+  skills: ExtractedSkill[];
 
   experience: {
     company: string;
@@ -79,9 +81,16 @@ If information is missing:
 - use an empty array for missing lists
 
 For skills:
+- extract technical and professional skills
+- include programming languages
+- include frameworks
+- include databases
+- include cloud tools
+- include development tools
 - classify each skill into a useful category
-- estimate proficiency only when reasonably supported
+- estimate proficiency only when supported
 - otherwise use "Not specified"
+- use standard skill names suitable for job matching
 
 For experience:
 - preserve the information from the resume
@@ -309,4 +318,15 @@ ${resumeText}
       "Gemini returned invalid JSON."
     );
   }
+}
+
+export function normalizeSkills(
+  skills: ResumeAnalysis["skills"]
+) {
+  return skills.map((skill) => ({
+    name: skill.name.trim(),
+    category: skill.category || "Other",
+    proficiency:
+      skill.proficiency || "Not specified",
+  }));
 }
