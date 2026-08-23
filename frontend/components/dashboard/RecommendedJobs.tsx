@@ -35,48 +35,99 @@ export default function RecommendedJobs() {
     <section className="mt-10">
       <h2 className="text-2xl font-bold">Recommended Jobs For You</h2>
 
-      <div className="grid gap-5 mt-5">
+      <div className="space-y-6">
         {jobs.map((job) => (
-          <div key={job.id} className="rounded-xl border p-5">
-            <h3 className="font-bold text-lg">{job.title}</h3>
+          <div
+            key={job.id}
+            className="
+rounded-2xl
+border
+bg-white
+p-6
+shadow-sm
+"
+          >
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="text-xl font-bold">{job.title}</h3>
 
-            <p>{job.company}</p>
+                <p className="text-muted-foreground mt-1">{job.company}</p>
+              </div>
 
-            <p className="mt-3">
-              Match Score:
-              <span className="font-bold">{job.matchScore}%</span>
-            </p>
+              <div
+                className="
+rounded-xl
+bg-green-100
+px-4
+py-2
+text-green-700
+font-bold
+"
+              >
+                {job.matchScore}%
+              </div>
+            </div>
 
-            <div className="mt-3">
-              <p className="font-semibold">Matched Skills</p>
+            <div className="mt-5">
+              <h4 className="font-semibold mb-3">Matched Skills</h4>
 
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap gap-2">
                 {job.matchedSkills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700"
+                    className="
+rounded-full
+bg-green-50
+border
+border-green-200
+px-3
+py-1
+text-sm
+text-green-700
+"
                   >
                     ✓ {skill}
                   </span>
                 ))}
-                {job.missingSkills.length > 0 && (
-                  <div className="mt-4">
-                    <p className="font-semibold">Skills to improve</p>
-
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {job.missingSkills.map((skill) => (
-                        <span
-                          key={skill}
-                          className="rounded-full bg-gray-100 px-3 py-1 text-sm"
-                        >
-                          ○ {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
+
+            {job.missingSkills.length > 0 && (
+              <div className="mt-5">
+                <h4 className="font-semibold mb-3">Skills to improve</h4>
+
+                <div className="flex flex-wrap gap-2">
+                  {job.missingSkills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="
+rounded-full
+bg-gray-100
+px-3
+py-1
+text-sm
+text-gray-700
+"
+                    >
+                      ○ {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <button
+              className="
+mt-6
+rounded-xl
+bg-black
+px-5
+py-2
+text-white
+"
+            >
+              View Job
+            </button>
           </div>
         ))}
       </div>
