@@ -81,6 +81,7 @@ export async function GET() {
           matchScore: match.score,
 
           matchLevel: match.matchLevel,
+          matchedSkillCount: match.matchedSkills.length,
 
           matchedSkills: match.matchedSkills,
 
@@ -100,7 +101,13 @@ export async function GET() {
 
       // highest match first
 
-      .sort((a, b) => (b.matchScore ?? 0) - (a.matchScore ?? 0))
+      .sort((a, b) => {
+        if ((b.matchScore ?? 0) !== (a.matchScore ?? 0)) {
+          return (b.matchScore ?? 0) - (a.matchScore ?? 0);
+        }
+
+        return b.matchedSkillCount - a.matchedSkillCount;
+      })
 
       // only top 6 jobs
 

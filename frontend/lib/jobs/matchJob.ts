@@ -113,15 +113,7 @@ export function calculateJobMatch(
 
   const score = Math.round((matchedWeight / totalWeight) * 100);
 
-  let matchLevel = "Needs Improvement";
-
-  if (score >= 90) {
-    matchLevel = "Excellent Match";
-  } else if (score >= 70) {
-    matchLevel = "Good Match";
-  } else if (score >= 50) {
-    matchLevel = "Average Match";
-  }
+  const matchedSkillCount = matchedSkills.length;
 
   const strengths: string[] = [];
   const improvements: string[] = [];
@@ -145,15 +137,28 @@ export function calculateJobMatch(
   for (const skill of missingSkills) {
     improvements.push(`Learn ${skill} to improve your chances`);
   }
+
+  let matchLevel = "Learning Opportunity";
+
+  if (score >= 90) {
+    matchLevel = "Excellent Match";
+  } else if (score >= 75) {
+    matchLevel = "Good Match";
+  } else if (score >= 50) {
+    matchLevel = "Average Match";
+  }
+
+  
   return {
     score,
     matchLevel,
+    
     matchedSkills,
     missingSkills,
 
-    explanation:{
-    strengths,
-    improvements
-  }
+    explanation: {
+      strengths,
+      improvements,
+    },
   };
 }
