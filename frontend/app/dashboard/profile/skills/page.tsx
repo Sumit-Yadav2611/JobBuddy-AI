@@ -7,6 +7,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users, skills } from "@/lib/db/schema";
 
+import SkillsForm from "./SkillsForm";
+
 export default async function SkillsPage() {
   const { userId } = await auth();
 
@@ -14,7 +16,6 @@ export default async function SkillsPage() {
     return null;
   }
 
-  // Find the application user using Clerk ID
   const [dbUser] = await db
     .select()
     .from(users)
@@ -23,55 +24,61 @@ export default async function SkillsPage() {
 
   if (!dbUser) {
     return (
-      <div className="min-h-screen bg-background p-10">
-        <h1 className="text-2xl font-bold">User profile not found</h1>
+      <div className="min-h-screen bg-[#02040a] p-10 text-white">
+        <h1 className="text-2xl font-bold">
+          User profile not found
+        </h1>
 
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-2 text-slate-400">
           Please upload and analyze your resume first.
         </p>
       </div>
     );
   }
 
-  // Get skills extracted from the resume
   const userSkills = await db
     .select()
     .from(skills)
     .where(eq(skills.userId, dbUser.id));
 
-  // Group skills by category
-  const groupedSkills = userSkills.reduce(
-    (groups, skill) => {
-      const category = skill.category || "Other";
-
-      if (!groups[category]) {
-        groups[category] = [];
-      }
-
-      groups[category].push(skill);
-
-      return groups;
-    },
-    {} as Record<string, typeof userSkills>,
-  );
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
+      {/* Ambient background */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute -left-40 -top-40 h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[140px]" />
 
-      <header className="flex h-16 items-center justify-between border-b px-6">
+        <div className="absolute -right-40 top-20 h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-[150px]" />
+
+        <div className="absolute bottom-[-250px] left-1/3 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[160px]" />
+
+        <div
+          className="absolute inset-0 opacity-[0.025]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)",
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 flex h-16 items-center justify-between border-b border-white/10 bg-black/20 px-6 backdrop-blur-xl">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/profile"
-            className="rounded-lg p-2 transition-colors hover:bg-muted"
+            className="rounded-lg p-2 text-slate-400 transition hover:bg-white/5 hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
 
           <div>
-            <p className="text-sm text-muted-foreground">Profile</p>
+            <p className="text-xs text-slate-500">
+              Profile
+            </p>
 
-            <h1 className="text-lg font-semibold">Skills</h1>
+            <h1 className="text-lg font-semibold text-white">
+              Skills & Expertise
+            </h1>
           </div>
         </div>
 
@@ -79,97 +86,29 @@ export default async function SkillsPage() {
       </header>
 
       {/* Main */}
-
-      <main className="mx-auto max-w-5xl p-6 lg:p-10">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-muted">
-              <Code2 className="h-5 w-5" />
+      <main className="relative z-10 mx-auto max-w-6xl px-5 py-8 sm:px-6 lg:px-10 lg:py-12">
+        {/* Page heading */}
+        <div className="mb-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-400/10">
+              <Code2 className="h-6 w-6 text-cyan-300" />
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">Your Skills</h2>
+              <h2 className="text-2xl font-bold tracking-tight sm:text-3xl">
+                Skills & Expertise
+              </h2>
 
-              <p className="mt-1 text-muted-foreground">
-                Skills extracted from your resume by JobBuddy AI.
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                Manage the technologies, tools, and professional
+                skills that represent your experience.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Skill count */}
-
-        <div className="mt-8 rounded-2xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Total Skills</p>
-
-          <p className="mt-1 text-3xl font-bold">{userSkills.length}</p>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Skills found in your resume
-          </p>
-        </div>
-
-        {/* No skills */}
-
-        {userSkills.length === 0 && (
-          <div className="mt-6 rounded-2xl border bg-card p-8 text-center">
-            <Code2 className="mx-auto h-10 w-10 text-muted-foreground" />
-
-            <h3 className="mt-4 text-lg font-semibold">No skills found</h3>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Upload and analyze your resume to extract your skills.
-            </p>
-
-            <Link
-              href="/dashboard/resume"
-              className="mt-5 inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
-            >
-              Go to Resume
-            </Link>
-          </div>
-        )}
-
-        {/* Skill categories */}
-
-        <div className="mt-6 space-y-6">
-          {Object.entries(groupedSkills).map(([category, categorySkills]) => (
-            <section key={category} className="rounded-2xl border bg-card p-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{category}</h3>
-
-                <span className="rounded-full border px-3 py-1 text-xs text-muted-foreground">
-                  {categorySkills.length}{" "}
-                  {categorySkills.length === 1 ? "skill" : "skills"}
-                </span>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {categorySkills.map((skill) => (
-                  <div
-                    key={skill.id}
-                    className="rounded-xl border p-4 transition-all hover:-translate-y-0.5 hover:shadow-sm"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <h4 className="font-medium">{skill.name}</h4>
-
-                      <Code2 className="h-4 w-4 text-muted-foreground" />
-                    </div>
-
-                    {skill.proficiency && (
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        Proficiency:{" "}
-                        <span className="font-medium text-foreground">
-                          {skill.proficiency}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
+        {/* Skills form */}
+        <SkillsForm initialSkills={userSkills} />
       </main>
     </div>
   );
