@@ -16,8 +16,8 @@ type Job = {
   salary: string | null;
   url: string | null;
   matchScore: number | null;
-  matchedSkills: string[];
-  missingSkills: string[];
+  matchedSkills?: string[];
+  missingSkills?: string[];
 };
 
 function cleanDescription(description: string | null) {
@@ -211,14 +211,14 @@ export default function JobsClient({ initialJobs }: { initialJobs: Job[] }) {
                       />
                     </div>
 
-                    {job.matchedSkills.length > 0 && (
+                    {(job.matchedSkills?.length ?? 0) > 0 && (
                       <div className="mt-3">
                         <p className="text-xs font-medium text-muted-foreground">
                           Matching skills
                         </p>
 
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {job.matchedSkills.map((skill) => (
+                          {(job.matchedSkills ?? []).map((skill) => (
                             <span
                               key={skill}
                               className="rounded-full border px-2.5 py-1 text-xs"
@@ -230,14 +230,14 @@ export default function JobsClient({ initialJobs }: { initialJobs: Job[] }) {
                       </div>
                     )}
 
-                    {job.missingSkills.length > 0 && (
+                    {(job.missingSkills?.length ?? 0) > 0 && (
                       <div className="mt-3">
                         <p className="text-xs font-medium text-muted-foreground">
                           Skills to improve
                         </p>
 
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {job.missingSkills.map((skill) => (
+                          {(job.missingSkills ?? []).map((skill) => (
                             <span
                               key={skill}
                               className="rounded-full border px-2.5 py-1 text-xs text-muted-foreground"
