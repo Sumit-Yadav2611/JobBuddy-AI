@@ -6,34 +6,7 @@ import { eq, desc } from "drizzle-orm";
 
 import { db } from "@/lib/db";
 import { users, education } from "@/lib/db/schema";
-
-function formatDate(date: Date | null) {
-  if (!date) return null;
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
-
-function getDateRange(startDate: Date | null, endDate: Date | null) {
-  const start = formatDate(startDate);
-  const end = formatDate(endDate);
-
-  if (!start && !end) {
-    return "Dates not specified";
-  }
-
-  if (start && end) {
-    return `${start} – ${end}`;
-  }
-
-  if (start) {
-    return `${start} – Present`;
-  }
-
-  return end ?? "Dates not specified";
-}
+import EducationForm from "./EducationForm";
 
 export default async function EducationPage() {
   const { userId } = await auth();
@@ -51,10 +24,10 @@ export default async function EducationPage() {
 
   if (!dbUser) {
     return (
-      <div className="min-h-screen bg-background p-10">
+      <div className="min-h-screen bg-[#02040a] p-10 text-white">
         <h1 className="text-2xl font-bold">User profile not found</h1>
 
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-2 text-slate-400">
           Please upload and analyze your resume first.
         </p>
       </div>
@@ -66,25 +39,45 @@ export default async function EducationPage() {
     .select()
     .from(education)
     .where(eq(education.userId, dbUser.id))
-    .orderBy(desc(education.endDate));
+    .orderBy(desc(education.startDate));
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <div className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
+      {/* Background glow */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-15%] top-[-15%] h-[550px] w-[550px] rounded-full bg-cyan-500/10 blur-[120px]" />
 
-      <header className="flex h-16 items-center justify-between border-b px-6">
+        <div className="absolute right-[-15%] top-[10%] h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[120px]" />
+
+        <div className="absolute bottom-[-20%] left-[25%] h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[130px]" />
+
+        {/* Grid */}
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)",
+            backgroundSize: "50px 50px",
+          }}
+        />
+      </div>
+
+      {/* Header */}
+      <header className="relative z-10 flex h-16 items-center justify-between border-b border-white/10 bg-black/20 px-6 backdrop-blur-xl">
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/profile"
-            className="rounded-lg p-2 transition-colors hover:bg-muted"
+            className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/5 hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
 
           <div>
-            <p className="text-sm text-muted-foreground">Profile</p>
+            <p className="text-sm text-slate-500">Profile</p>
 
-            <h1 className="text-lg font-semibold">Education</h1>
+            <h1 className="text-lg font-semibold text-white">
+              Education
+            </h1>
           </div>
         </div>
 
@@ -92,117 +85,73 @@ export default async function EducationPage() {
       </header>
 
       {/* Main */}
-
-      <main className="mx-auto max-w-5xl p-6 lg:p-10">
+      <main className="relative z-10 mx-auto max-w-5xl px-6 py-10 lg:px-10">
         {/* Heading */}
-
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-muted">
-              <GraduationCap className="h-5 w-5" />
+        <div className="mb-8">
+          <div className="flex items-start gap-4">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-500/10 shadow-[0_0_25px_rgba(34,211,238,0.08)]">
+              <GraduationCap className="h-6 w-6 text-cyan-300" />
             </div>
 
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-400/80">
+                Profile
+              </p>
+
+              <h2 className="mt-1 text-3xl font-bold tracking-tight text-white sm:text-4xl">
                 Your Education
               </h2>
 
-              <p className="mt-1 text-muted-foreground">
-                Academic information extracted from your resume by JobBuddy AI.
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-400">
+                Manage your academic background and keep your profile
+                ready for intelligent job matching.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Education count */}
+        {/* Stats */}
+        <div className="mb-8 grid gap-4 sm:grid-cols-2">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 shadow-xl backdrop-blur-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-500">
+                  Education Entries
+                </p>
 
-        <div className="mt-8 rounded-2xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">Education Entries</p>
+                <p className="mt-1 text-3xl font-bold text-white">
+                  {userEducation.length}
+                </p>
+              </div>
 
-          <p className="mt-1 text-3xl font-bold">{userEducation.length}</p>
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-cyan-400/20 bg-cyan-500/10">
+                <GraduationCap className="h-5 w-5 text-cyan-300" />
+              </div>
+            </div>
 
-          <p className="mt-1 text-sm text-muted-foreground">
-            Academic records found in your resume
-          </p>
-        </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Academic records in your JobBuddy AI profile
+            </p>
+          </div>
 
-        {/* Empty state */}
-
-        {userEducation.length === 0 && (
-          <div className="mt-6 rounded-2xl border bg-card p-8 text-center">
-            <GraduationCap className="mx-auto h-10 w-10 text-muted-foreground" />
-
-            <h3 className="mt-4 text-lg font-semibold">No education found</h3>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Upload and analyze your resume to extract your education.
+          <div className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 shadow-xl backdrop-blur-xl">
+            <p className="text-sm text-slate-500">
+              Profile Benefit
             </p>
 
-            <Link
-              href="/dashboard/resume"
-              className="mt-5 inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
-            >
-              Go to Resume
-            </Link>
+            <p className="mt-1 text-lg font-semibold text-white">
+              Better Job Matching
+            </p>
+
+            <p className="mt-2 text-xs leading-5 text-slate-500">
+              Education details help JobBuddy AI understand your
+              qualifications when evaluating opportunities.
+            </p>
           </div>
-        )}
+        </div>
 
-        {/* Education cards */}
-
-        {userEducation.length > 0 && (
-          <div className="mt-8 space-y-5">
-            {userEducation.map((item) => (
-              <article key={item.id} className="rounded-2xl border bg-card p-6">
-                <div className="flex flex-col gap-5 sm:flex-row">
-                  {/* Icon */}
-
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border bg-muted">
-                    <GraduationCap className="h-5 w-5" />
-                  </div>
-
-                  {/* Content */}
-
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-col justify-between gap-2 sm:flex-row">
-                      <div>
-                        <h3 className="text-xl font-semibold">
-                          {item.degree || "Degree not specified"}
-                        </h3>
-
-                        {item.fieldOfStudy && (
-                          <p className="mt-1 font-medium text-muted-foreground">
-                            {item.fieldOfStudy}
-                          </p>
-                        )}
-                      </div>
-
-                      <span className="text-sm text-muted-foreground">
-                        {getDateRange(item.startDate, item.endDate)}
-                      </span>
-                    </div>
-
-                    {/* Institution */}
-
-                    <p className="mt-4 text-sm font-medium">
-                      {item.institution}
-                    </p>
-
-                    {/* Grade */}
-
-                    {item.grade && (
-                      <div className="mt-4 inline-flex rounded-full border px-3 py-1 text-xs text-muted-foreground">
-                        Grade:{" "}
-                        <span className="ml-1 font-medium text-foreground">
-                          {item.grade}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
+        {/* Education Form */}
+        <EducationForm initialEducation={userEducation} />
       </main>
     </div>
   );
