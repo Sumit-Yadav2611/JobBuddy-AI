@@ -1,16 +1,12 @@
 import { auth } from "@clerk/nextjs/server";
-import { UserButton } from "@clerk/nextjs";
+import { desc, eq } from "drizzle-orm";
+import { ArrowLeft, FolderKanban, Sparkles } from "lucide-react";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  FolderGit2,
-  GitBranch,
-  ExternalLink,
-} from "lucide-react";
-import { eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
-import { users, projects } from "@/lib/db/schema";
+import { projects, users } from "@/lib/db/schema";
+
+import ProjectsForm from "./ProjectsForm";
 
 export default async function ProjectsPage() {
   const { userId } = await auth();
@@ -19,236 +15,114 @@ export default async function ProjectsPage() {
     return null;
   }
 
-  // Find current application user
-  const [dbUser] = await db
+  const [user] = await db
     .select()
     .from(users)
     .where(eq(users.clerkId, userId))
     .limit(1);
 
-  if (!dbUser) {
-    return (
-      <div className="min-h-screen bg-background p-10">
-        <h1 className="text-2xl font-bold">
-          User profile not found
-        </h1>
-
-        <p className="mt-2 text-muted-foreground">
-          Please upload and analyze your resume first.
-        </p>
-      </div>
-    );
+  if (!user) {
+    return null;
   }
 
-  // Get projects belonging to current user
   const userProjects = await db
     .select()
     .from(projects)
-    .where(eq(projects.userId, dbUser.id));
+    .where(eq(projects.userId, user.id))
+    .orderBy(desc(projects.createdAt));
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
+    <main className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
+      {/* Global ambient background */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -left-64 -top-64 h-[42rem] w-[42rem] rounded-full bg-cyan-500/[0.08] blur-[160px]" />
 
-      <header className="flex h-16 items-center justify-between border-b px-6">
-        <div className="flex items-center gap-4">
-          <Link
-            href="/dashboard/profile"
-            className="rounded-lg p-2 transition-colors hover:bg-muted"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+        <div className="absolute right-[-18rem] top-[15%] h-[38rem] w-[38rem] rounded-full bg-violet-600/[0.08] blur-[170px]" />
 
-          <div>
-            <p className="text-sm text-muted-foreground">
-              Profile
-            </p>
+        <div className="absolute bottom-[-20rem] left-[35%] h-[36rem] w-[36rem] rounded-full bg-blue-600/[0.06] blur-[160px]" />
 
-            <h1 className="text-lg font-semibold">
-              Projects
-            </h1>
-          </div>
-        </div>
+        {/* Subtle grid */}
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.35) 1px, transparent 1px)",
+            backgroundSize: "48px 48px",
+          }}
+        />
+      </div>
 
-        <UserButton />
-      </header>
+      <div className="relative mx-auto max-w-7xl px-5 py-8 sm:px-8 lg:px-10 lg:py-12">
+        {/* Back navigation */}
+        <Link
+          href="/dashboard/profile"
+          className="group mb-10 inline-flex items-center gap-2 rounded-xl border border-white/[0.08] bg-white/[0.025] px-3.5 py-2 text-sm text-slate-400 backdrop-blur-xl transition-all duration-200 hover:border-cyan-400/20 hover:bg-cyan-400/[0.05] hover:text-cyan-200"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
+          Back to Profile
+        </Link>
 
-      {/* Main */}
-
-      <main className="mx-auto max-w-5xl p-6 lg:p-10">
-        {/* Heading */}
-
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-muted">
-              <FolderGit2 className="h-5 w-5" />
-            </div>
-
+        {/* Hero */}
+        <header className="relative mb-10">
+          <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                Your Projects
-              </h2>
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-400/15 bg-cyan-400/[0.06] px-3.5 py-1.5 text-xs font-medium text-cyan-300">
+                <Sparkles className="h-3.5 w-3.5" />
+                Professional Profile
+              </div>
 
-              <p className="mt-1 text-muted-foreground">
-                Projects extracted from your resume by JobBuddy AI.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Project count */}
-
-        <div className="mt-8 rounded-2xl border bg-card p-6">
-          <p className="text-sm text-muted-foreground">
-            Total Projects
-          </p>
-
-          <p className="mt-1 text-3xl font-bold">
-            {userProjects.length}
-          </p>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            Projects found in your resume
-          </p>
-        </div>
-
-        {/* Empty state */}
-
-        {userProjects.length === 0 && (
-          <div className="mt-6 rounded-2xl border bg-card p-8 text-center">
-            <FolderGit2 className="mx-auto h-10 w-10 text-muted-foreground" />
-
-            <h3 className="mt-4 text-lg font-semibold">
-              No projects found
-            </h3>
-
-            <p className="mt-2 text-sm text-muted-foreground">
-              Upload and analyze your resume to extract your projects.
-            </p>
-
-            <Link
-              href="/dashboard/resume"
-              className="mt-5 inline-block rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
-            >
-              Go to Resume
-            </Link>
-          </div>
-        )}
-
-        {/* Projects */}
-
-        {userProjects.length > 0 && (
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {userProjects.map((project) => (
-              <article
-                key={project.id}
-                className="flex flex-col rounded-2xl border bg-card p-6 transition-all hover:-translate-y-0.5 hover:shadow-sm"
-              >
-                {/* Project header */}
-
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-muted">
-                    <FolderGit2 className="h-5 w-5" />
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`GitHub for ${project.name}`}
-                        className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        <GitBranch className="h-4 w-4" />
-                      </a>
-                    )}
-
-                    {project.liveUrl && (
-                      <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label={`Live project ${project.name}`}
-                        className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    )}
-                  </div>
+              <div className="flex items-start gap-4">
+                <div className="hidden h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-cyan-400/15 bg-cyan-400/[0.07] text-cyan-300 shadow-lg shadow-cyan-950/20 sm:flex">
+                  <FolderKanban className="h-6 w-6" />
                 </div>
 
-                {/* Name */}
-
-                <h3 className="mt-5 text-xl font-semibold">
-                  {project.name}
-                </h3>
-
-                {/* Description */}
-
-                {project.description && (
-                  <p className="mt-3 flex-1 text-sm leading-6 text-muted-foreground">
-                    {project.description}
+                <div>
+                  <p className="mb-1 text-sm font-medium text-slate-500">
+                    Profile / Projects
                   </p>
-                )}
 
-                {/* Technologies */}
+                  <h1 className="text-4xl font-semibold tracking-tight text-white sm:text-5xl">
+                    Your Projects
+                  </h1>
 
-                {project.technologies && (
-                  <div className="mt-5">
-                    <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                      Technologies
-                    </p>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400 sm:text-base">
+                    Showcase your technical work, products, and experience
+                    through a clean professional portfolio.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {project.technologies
-                        .split(",")
-                        .map((technology) => (
-                          <span
-                            key={technology.trim()}
-                            className="rounded-full border px-3 py-1 text-xs"
-                          >
-                            {technology.trim()}
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                )}
+            {/* Project count */}
+            <div className="flex w-fit items-center gap-4 rounded-2xl border border-white/[0.08] bg-white/[0.035] px-5 py-4 shadow-2xl shadow-black/20 backdrop-blur-xl">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-400/[0.08] text-cyan-300">
+                <FolderKanban className="h-4.5 w-4.5" />
+              </div>
 
-                {/* Links */}
+              <div>
+                <p className="text-xs text-slate-500">Portfolio</p>
 
-                {(project.githubUrl || project.liveUrl) && (
-                  <div className="mt-6 flex flex-wrap gap-3 border-t pt-5">
-                    {project.githubUrl && (
-                      <a
-                        href={project.githubUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-muted"
-                      >
-                        <GitBranch className="h-4 w-4" />
-                        GitHub
-                      </a>
-                    )}
-
-                    {project.liveUrl && (
-                      <a
-                        href={project.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium hover:bg-muted"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Live Demo
-                      </a>
-                    )}
-                  </div>
-                )}
-              </article>
-            ))}
+                <p className="mt-0.5 text-lg font-semibold text-white">
+                  {userProjects.length}{" "}
+                  {userProjects.length === 1 ? "Project" : "Projects"}
+                </p>
+              </div>
+            </div>
           </div>
-        )}
-      </main>
-    </div>
+
+          <div className="mt-8 h-px bg-gradient-to-r from-cyan-400/30 via-white/[0.08] to-transparent" />
+        </header>
+
+        {/* Projects */}
+        <ProjectsForm
+          initialProjects={userProjects.map((project) => ({
+            ...project,
+            createdAt:
+              project.createdAt?.toISOString() ??
+              new Date().toISOString(),
+          }))}
+        />
+      </div>
+    </main>
   );
 }
