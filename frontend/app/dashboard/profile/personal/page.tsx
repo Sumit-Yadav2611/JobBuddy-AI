@@ -1,17 +1,22 @@
 import { auth } from "@clerk/nextjs/server";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+
 import {
   ArrowLeft,
   User,
-  MapPin,
-  Phone,
-  BriefcaseBusiness,
+  ShieldCheck,
 } from "lucide-react";
+
 import { eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
-import { users, profiles } from "@/lib/db/schema";
+import {
+  users,
+  profiles,
+} from "@/lib/db/schema";
+
+import PersonalInformationForm from "./PersonalInformationForm";
 
 export default async function PersonalInformationPage() {
   const { userId } = await auth();
@@ -20,7 +25,6 @@ export default async function PersonalInformationPage() {
     return null;
   }
 
-  // Find current application user
   const [dbUser] = await db
     .select()
     .from(users)
@@ -29,44 +33,74 @@ export default async function PersonalInformationPage() {
 
   if (!dbUser) {
     return (
-      <div className="min-h-screen bg-background p-10">
-        <h1 className="text-2xl font-bold">User profile not found</h1>
+      <div className="min-h-screen bg-[#02040a] p-10 text-white">
+        <h1 className="text-2xl font-bold">
+          User profile not found
+        </h1>
 
-        <p className="mt-2 text-muted-foreground">
+        <p className="mt-2 text-slate-400">
           Please upload and analyze your resume first.
         </p>
       </div>
     );
   }
 
-  // Get profile information
   const [profile] = await db
     .select()
     .from(profiles)
     .where(eq(profiles.userId, dbUser.id))
     .limit(1);
 
-  const fullName =
-    [profile?.firstName, profile?.lastName].filter(Boolean).join(" ") ||
-    "Name not specified";
+  const initialData = {
+    firstName: profile?.firstName ?? "",
+    lastName: profile?.lastName ?? "",
+    headline: profile?.headline ?? "",
+    location: profile?.location ?? "",
+    phone: profile?.phone ?? "",
+    yearsOfExperience:
+      profile?.yearsOfExperience ?? null,
+  };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="relative min-h-screen overflow-hidden bg-[#02040a] text-white">
+      {/* Background glow */}
+
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute left-[-10%] top-[10%] h-[500px] w-[500px] rounded-full bg-cyan-500/8 blur-[120px]" />
+
+        <div className="absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-violet-600/10 blur-[140px]" />
+
+        <div className="absolute bottom-[-20%] left-[30%] h-[500px] w-[500px] rounded-full bg-blue-600/8 blur-[130px]" />
+
+        <div
+          className="absolute inset-0 opacity-[0.035]"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)",
+            backgroundSize: "64px 64px",
+          }}
+        />
+      </div>
+
       {/* Header */}
 
-      <header className="flex h-16 items-center justify-between border-b px-6">
+      <header className="relative z-10 flex h-16 items-center justify-between border-b border-white/5 bg-[#02040a]/70 px-6 backdrop-blur-xl">
         <div className="flex items-center gap-4">
           <Link
-            href="/dashboard/profile"
-            className="rounded-lg p-2 transition-colors hover:bg-muted"
+            href="/dashboard/settings"
+            className="rounded-xl border border-white/5 p-2.5 text-slate-400 transition-all hover:border-cyan-400/20 hover:bg-cyan-400/5 hover:text-white"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
 
           <div>
-            <p className="text-sm text-muted-foreground">Profile</p>
+            <p className="text-xs uppercase tracking-[0.2em] text-cyan-300/70">
+              Profile Settings
+            </p>
 
-            <h1 className="text-lg font-semibold">Personal Information</h1>
+            <h1 className="text-lg font-semibold">
+              Personal Information
+            </h1>
           </div>
         </div>
 
@@ -75,135 +109,54 @@ export default async function PersonalInformationPage() {
 
       {/* Main */}
 
-      <main className="mx-auto max-w-4xl p-6 lg:p-10">
+      <main className="relative z-10 mx-auto max-w-5xl px-6 py-10 lg:px-10">
         {/* Heading */}
 
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border bg-muted">
-              <User className="h-5 w-5" />
-            </div>
+        <div className="mb-8">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/5 px-3 py-1.5 text-xs font-medium text-cyan-300">
+            <User className="h-3.5 w-3.5" />
 
-            <div>
-              <h2 className="text-3xl font-bold tracking-tight">
-                Personal Information
-              </h2>
-
-              <p className="mt-1 text-muted-foreground">
-                Your basic professional information.
-              </p>
-            </div>
+            Professional Profile
           </div>
+
+          <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+            Personal{" "}
+            <span className="bg-gradient-to-r from-cyan-300 via-blue-400 to-violet-400 bg-clip-text text-transparent">
+              Information
+            </span>
+          </h2>
+
+          <p className="mt-3 max-w-2xl text-base leading-7 text-slate-400">
+            Update the information JobBuddy AI uses to understand
+            your professional identity and improve your job matches.
+          </p>
         </div>
 
-        {/* Profile Card */}
+        {/* Form */}
 
-        <section className="mt-8 rounded-2xl border bg-card p-6 lg:p-8">
-          {/* Name */}
+        <PersonalInformationForm
+          initialData={initialData}
+        />
 
-          <div className="flex items-start gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border bg-muted text-lg font-semibold">
-              {fullName.charAt(0).toUpperCase()}
-            </div>
+        {/* Security note */}
 
-            <div>
-              <h3 className="text-xl font-semibold">{fullName}</h3>
-
-              {profile?.headline && (
-                <p className="mt-1 text-muted-foreground">{profile.headline}</p>
-              )}
-            </div>
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-white/5 bg-[#060914]/60 p-5 backdrop-blur-xl">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-emerald-400/20 bg-emerald-400/5">
+            <ShieldCheck className="h-4 w-4 text-emerald-300" />
           </div>
 
-          {/* Information Grid */}
+          <div>
+            <p className="text-sm font-medium text-slate-200">
+              Your information is private
+            </p>
 
-          <div className="mt-8 grid gap-5 sm:grid-cols-2">
-            {/* Location */}
-
-            <div className="rounded-xl border p-5">
-              <div className="flex items-center gap-3">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Location
-                  </p>
-
-                  <p className="mt-1 font-medium">
-                    {profile?.location || "Not specified"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Phone */}
-
-            <div className="rounded-xl border p-5">
-              <div className="flex items-center gap-3">
-                <Phone className="h-5 w-5 text-muted-foreground" />
-
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Phone
-                  </p>
-
-                  <p className="mt-1 font-medium">
-                    {profile?.phone || "Not specified"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Experience */}
-
-            <div className="rounded-xl border p-5">
-              <div className="flex items-center gap-3">
-                <BriefcaseBusiness className="h-5 w-5 text-muted-foreground" />
-
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Experience
-                  </p>
-
-                  <p className="mt-1 font-medium">
-                    {profile?.yearsOfExperience !== null &&
-                    profile?.yearsOfExperience !== undefined
-                      ? `${profile.yearsOfExperience} years`
-                      : "Not specified"}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Email */}
-
-            <div className="rounded-xl border p-5">
-              <div className="flex items-center gap-3">
-                <User className="h-5 w-5 text-muted-foreground" />
-
-                <div className="min-w-0">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Email
-                  </p>
-
-                  <p className="mt-1 truncate font-medium">{dbUser.email}</p>
-                </div>
-              </div>
-            </div>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              Your profile information is associated with your
+              authenticated JobBuddy AI account and is only used
+              to provide your job-search features.
+            </p>
           </div>
-
-          {/* Headline */}
-
-          {profile?.headline && (
-            <div className="mt-5 rounded-xl border p-5">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Professional Headline
-              </p>
-
-              <p className="mt-2 font-medium">{profile.headline}</p>
-            </div>
-          )}
-        </section>
+        </div>
       </main>
     </div>
   );
