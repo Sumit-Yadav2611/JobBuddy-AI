@@ -24,6 +24,41 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const subscriptions = pgTable("subscriptions", {
+  id: uuid("id").defaultRandom().primaryKey(),
+
+  userId: uuid("user_id")
+    .notNull()
+    .unique()
+    .references(() => users.id, { onDelete: "cascade" }),
+
+  plan: text("plan").notNull().default("free"),
+
+  status: text("status").notNull().default("active"),
+
+  provider: text("provider").notNull().default("stripe"),
+
+  providerCustomerId: text("provider_customer_id"),
+
+  providerSubscriptionId: text("provider_subscription_id"),
+
+  currentPeriodStart: timestamp("current_period_start"),
+
+  currentPeriodEnd: timestamp("current_period_end"),
+
+  cancelAtPeriodEnd: boolean("cancel_at_period_end")
+    .notNull()
+    .default(false),
+
+  createdAt: timestamp("created_at")
+    .notNull()
+    .defaultNow(),
+
+  updatedAt: timestamp("updated_at")
+    .notNull()
+    .defaultNow(),
+});
+
 /* =========================
    PROFILES
 ========================= */
