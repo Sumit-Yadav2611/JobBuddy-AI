@@ -1,4 +1,16 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
+
+import { db } from "@/lib/db";
+import {
+  users,
+  profiles,
+  skills,
+  experiences,
+  education,
+  projects,
+} from "@/lib/db/schema";
+
 import { UserButton } from "@clerk/nextjs";
 
 import Sidebar from "@/components/dashboard/Sidebar";
@@ -32,15 +44,138 @@ export default async function DashboardPage() {
 
   const firstName = user.firstName || "there";
 
+  // =======================================================
+  // Profile completion
+  // =======================================================
+
+  const [dbUser] = await db
+    .select()
+    .from(users)
+    .where(eq(users.clerkId, user.id))
+    .limit(1);
+
+  const totalSections = 6;
+
+  let completionPercentage = 0;
+  let completedSections = 0;
+
+  let personalComplete = false;
+  let summaryComplete = false;
+  let skillsComplete = false;
+  let experienceComplete = false;
+  let educationComplete = false;
+  let projectsComplete = false;
+
+  if (dbUser) {
+    const [profile] = await db
+      .select()
+      .from(profiles)
+      .where(eq(profiles.userId, dbUser.id))
+      .limit(1);
+
+    const userSkills = await db
+      .select()
+      .from(skills)
+      .where(eq(skills.userId, dbUser.id));
+
+    const userExperience = await db
+      .select()
+      .from(experiences)
+      .where(eq(experiences.userId, dbUser.id));
+
+    const userEducation = await db
+      .select()
+      .from(education)
+      .where(eq(education.userId, dbUser.id));
+
+    const userProjects = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.userId, dbUser.id));
+
+    // -------------------------------------------------------
+    // Same six profile sections used throughout the app
+    // -------------------------------------------------------
+
+    personalComplete =
+      Boolean(profile?.firstName || profile?.lastName) &&
+      Boolean(profile?.headline || profile?.location);
+
+    summaryComplete = Boolean(profile?.summary?.trim());
+
+    skillsComplete = userSkills.length > 0;
+    experienceComplete = userExperience.length > 0;
+    educationComplete = userEducation.length > 0;
+    projectsComplete = userProjects.length > 0;
+
+    completedSections = [
+      personalComplete,
+      summaryComplete,
+      skillsComplete,
+      experienceComplete,
+      educationComplete,
+      projectsComplete,
+    ].filter(Boolean).length;
+
+    completionPercentage = Math.round(
+      (completedSections / totalSections) * 100,
+    );
+  }
+
+  // =======================================================
+  // Profile checklist
+  // =======================================================
+
+  const profileItems = [
+    {
+      name: "Basic Information",
+      complete: personalComplete,
+      href: "/dashboard/profile/personal",
+    },
+    {
+      name: "Summary",
+      complete: summaryComplete,
+      href: "/dashboard/profile/summary",
+    },
+    {
+      name: "Work Experience",
+      complete: experienceComplete,
+      href: "/dashboard/profile/experience",
+    },
+    {
+      name: "Education",
+      complete: educationComplete,
+      href: "/dashboard/profile/education",
+    },
+    {
+      name: "Skills",
+      complete: skillsComplete,
+      href: "/dashboard/profile/skills",
+    },
+    {
+      name: "Projects",
+      complete: projectsComplete,
+      href: "/dashboard/profile/projects",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-[#050812] text-white">
-      {/* Ambient background */}
+      {/* =====================================================
+          AMBIENT BACKGROUND
+      ===================================================== */}
+
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        {/* Cyan */}
         <div className="absolute left-[18%] top-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[140px]" />
+
+        {/* Violet */}
         <div className="absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-violet-600/10 blur-[160px]" />
+
+        {/* Blue */}
         <div className="absolute bottom-[-20%] left-[35%] h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[150px]" />
 
-        {/* subtle grid */}
+        {/* Subtle grid */}
         <div
           className="absolute inset-0 opacity-[0.035]"
           style={{
@@ -51,12 +186,18 @@ export default async function DashboardPage() {
         />
       </div>
 
-      {/* Sidebar — intentionally unchanged */}
+      {/* Sidebar */}
       <Sidebar />
 
-      {/* Main content */}
+      {/* =====================================================
+          MAIN CONTENT
+      ===================================================== */}
+
       <div className="lg:pl-64">
-        {/* Top header */}
+        {/* ===================================================
+            TOP HEADER
+        =================================================== */}
+
         <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-[#050812]/80 backdrop-blur-xl">
           <div className="flex h-[76px] items-center justify-between gap-6 px-6 lg:px-8">
             {/* Page title */}
@@ -110,9 +251,15 @@ export default async function DashboardPage() {
           </div>
         </header>
 
-        {/* Dashboard */}
+        {/* ===================================================
+            DASHBOARD
+        =================================================== */}
+
         <main className="mx-auto max-w-[1600px] p-5 sm:p-6 lg:p-8">
-          {/* Welcome */}
+          {/* =================================================
+              WELCOME
+          ================================================= */}
+
           <section className="mb-7">
             <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
               <div>
@@ -136,15 +283,20 @@ export default async function DashboardPage() {
             </div>
           </section>
 
-          {/* AI Hero */}
+          {/* =================================================
+              AI HERO
+          ================================================= */}
+
           <section className="relative mb-7 overflow-hidden rounded-2xl border border-white/10 bg-[#0a1020]/90 shadow-2xl shadow-black/20">
             {/* Hero glow */}
             <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-cyan-500/15 blur-[100px]" />
+
             <div className="pointer-events-none absolute -bottom-32 right-24 h-80 w-80 rounded-full bg-violet-600/20 blur-[110px]" />
 
             {/* Decorative rings */}
             <div className="pointer-events-none absolute right-[-40px] top-1/2 hidden h-[320px] w-[320px] -translate-y-1/2 rounded-full border border-cyan-400/10 lg:block">
               <div className="absolute inset-8 rounded-full border border-blue-400/10" />
+
               <div className="absolute inset-16 rounded-full border border-violet-400/10" />
 
               <div className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-cyan-400/20 to-violet-600/20 shadow-[0_0_70px_rgba(34,211,238,0.18)]">
@@ -177,8 +329,12 @@ export default async function DashboardPage() {
                   <StatCard
                     icon={<ProfileIcon />}
                     label="Profile"
-                    value="67%"
-                    description="Almost there"
+                    value={`${completionPercentage}%`}
+                    description={
+                      completionPercentage === 100
+                        ? "Fully complete"
+                        : "Almost there"
+                    }
                   />
 
                   <StatCard
@@ -199,9 +355,15 @@ export default async function DashboardPage() {
             </div>
           </section>
 
-          {/* Platforms + Profile */}
-          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_350px]">
-            {/* Platforms */}
+          {/* =================================================
+              PLATFORMS + PROFILE
+          ================================================= */}
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
+            {/* =================================================
+                PLATFORMS
+            ================================================= */}
+
             <section>
               <div className="mb-4 flex items-end justify-between gap-4">
                 <div>
@@ -256,14 +418,29 @@ export default async function DashboardPage() {
               </div>
             </section>
 
-            {/* Existing real profile component */}
-            <ProfileCompleteness />
+            {/* =================================================
+                PROFILE COMPLETENESS
+            ================================================= */}
+
+            <ProfileCompleteness
+              completionPercentage={completionPercentage}
+              completedSections={completedSections}
+              totalSections={totalSections}
+              profileItems={profileItems}
+            />
           </div>
 
-          {/* Existing real jobs */}
+          {/* =================================================
+              JOBS
+          ================================================= */}
+
           <div className="mt-6">
             <JobsSection />
           </div>
+
+          {/* =================================================
+              RECOMMENDED JOBS
+          ================================================= */}
 
           <div className="mt-6">
             <RecommendedJobs />
@@ -273,6 +450,10 @@ export default async function DashboardPage() {
     </div>
   );
 }
+
+/* ============================================================
+   STAT CARD
+============================================================ */
 
 function StatCard({
   icon,
@@ -286,14 +467,15 @@ function StatCard({
   description: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-black/20 px-3 py-3 backdrop-blur-sm">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan-400/15 bg-cyan-400/[0.06] text-cyan-300">
+    <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-black/20 px-3 py-3 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/20 hover:bg-white/[0.035]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan-400/15 bg-cyan-400/[0.06] text-cyan-300 transition-all duration-300 group-hover:bg-cyan-400/[0.1]">
         {icon}
       </div>
 
       <div className="min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{value}</span>
+
           <span className="truncate text-xs text-slate-500">{label}</span>
         </div>
 
@@ -304,6 +486,10 @@ function StatCard({
     </div>
   );
 }
+
+/* ============================================================
+   SEARCH ICON
+============================================================ */
 
 function SearchIcon() {
   return (
@@ -320,6 +506,10 @@ function SearchIcon() {
   );
 }
 
+/* ============================================================
+   BELL ICON
+============================================================ */
+
 function BellIcon() {
   return (
     <svg
@@ -334,6 +524,10 @@ function BellIcon() {
     </svg>
   );
 }
+
+/* ============================================================
+   BRIEFCASE ICON
+============================================================ */
 
 function BriefcaseBusinessIcon() {
   return (
@@ -351,6 +545,10 @@ function BriefcaseBusinessIcon() {
   );
 }
 
+/* ============================================================
+   SPARKLES ICON
+============================================================ */
+
 function SparklesIcon() {
   return (
     <svg
@@ -365,6 +563,10 @@ function SparklesIcon() {
     </svg>
   );
 }
+
+/* ============================================================
+   PROFILE ICON
+============================================================ */
 
 function ProfileIcon() {
   return (
@@ -381,6 +583,10 @@ function ProfileIcon() {
   );
 }
 
+/* ============================================================
+   TARGET ICON
+============================================================ */
+
 function TargetIcon() {
   return (
     <svg
@@ -396,6 +602,10 @@ function TargetIcon() {
     </svg>
   );
 }
+
+/* ============================================================
+   BOOKMARK ICON
+============================================================ */
 
 function BookmarkIcon() {
   return (

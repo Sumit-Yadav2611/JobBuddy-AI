@@ -169,3 +169,123 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return Response.json(
+        {
+          success: false,
+          error: "Unauthorized",
+        },
+        { status: 401 },
+      );
+    }
+
+    const body = await request.json();
+    const { jobId } = body;
+
+    if (!jobId) {
+      return Response.json(
+        {
+          success: false,
+          error: "Job ID is required",
+        },
+        { status: 400 },
+      );
+    }
+
+    /*
+     * Find current user
+     */
+    const [dbUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkId, userId))
+      .limit(1);
+
+    if (!dbUser) {
+      return Response.json(
+        {
+          success: false,
+          error: "User not found",
+        },
+        { status: 404 },
+      );
+    }
+
+    /*
+     * Check that the application belongs
+     * to the current user.
+     */
+    const [existingApplication] =
+      await db
+        .select()
+        .from(applications)
+        .where(
+          and(
+            eq(
+              applications.userId,
+              dbUser.id,
+            ),
+            eq(
+              applications.jobId,
+              jobId,
+            ),
+          ),
+        )
+        .limit(1);
+
+    if (!existingApplication) {
+      return Response.json(
+        {
+          success: false,
+          error:
+            "Application not found",
+        },
+        { status: 404 },
+      );
+    }
+
+    /*
+     * Remove application
+     */
+    await db
+      .delete(applications)
+      .where(
+        and(
+          eq(
+            applications.userId,
+            dbUser.id,
+          ),
+          eq(
+            applications.jobId,
+            jobId,
+          ),
+        ),
+      );
+
+    return Response.json({
+      success: true,
+      removed: true,
+      message:
+        "Application removed successfully",
+    });
+  } catch (error) {
+    console.error(
+      "Remove application error:",
+      error,
+    );
+
+    return Response.json(
+      {
+        success: false,
+        error:
+          "Failed to remove application",
+      },
+      { status: 500 },
+    );
+  }
+}
