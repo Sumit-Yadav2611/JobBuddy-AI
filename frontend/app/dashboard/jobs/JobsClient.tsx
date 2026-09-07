@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AlertCircle,
   ArrowUpRight,
@@ -129,9 +130,26 @@ export default function JobsClient({
 }: {
   initialJobs: Job[];
 }) {
+  /*
+   * ============================================================
+   * URL SEARCH CONNECTION
+   *
+   * The global DashboardHeader sends:
+   *
+   * /dashboard/jobs?search=react
+   *
+   * useSearchParams lets this component read that value and
+   * connect it to the existing jobs search state.
+   * ============================================================
+   */
+
+  const searchParams = useSearchParams();
+
+  const urlSearch = searchParams.get("search") || "";
+
   const [jobs, setJobs] = useState<Job[]>(initialJobs);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(urlSearch);
   const [location, setLocation] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -144,6 +162,28 @@ export default function JobsClient({
     new Set(),
   );
 
+  /*
+   * ============================================================
+   * SYNC GLOBAL HEADER SEARCH → JOBS SEARCH
+   * ============================================================
+   */
+
+  useEffect(() => {
+    setSearch((currentSearch) => {
+      if (currentSearch === urlSearch) {
+        return currentSearch;
+      }
+
+      return urlSearch;
+    });
+  }, [urlSearch]);
+
+  /*
+   * ============================================================
+   * FETCH JOBS
+   * ============================================================
+   */
+
   async function fetchJobs(
     currentSearch: string,
     currentLocation: string,
@@ -152,6 +192,9 @@ export default function JobsClient({
     try {
       setLoading(true);
 
+      /*
+       * Optional live synchronization.
+       */
       if (sync) {
         const syncResponse = await fetch("/api/jobs/sync", {
           method: "POST",
@@ -166,6 +209,9 @@ export default function JobsClient({
         }
       }
 
+      /*
+       * Build API query.
+       */
       const params = new URLSearchParams();
 
       if (currentSearch.trim()) {
@@ -198,6 +244,14 @@ export default function JobsClient({
       setLoading(false);
     }
   }
+
+  /*
+   * ============================================================
+   * APPLY
+   *
+   * Existing behavior intentionally preserved.
+   * ============================================================
+   */
 
   async function applyToJob(jobId: string) {
     try {
@@ -239,6 +293,14 @@ export default function JobsClient({
     }
   }
 
+  /*
+   * ============================================================
+   * SEARCH / LOCATION DEBOUNCE
+   *
+   * This remains the existing real API search behavior.
+   * ============================================================
+   */
+
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchJobs(search, location);
@@ -249,7 +311,10 @@ export default function JobsClient({
 
   return (
     <>
-      {/* Search / Filters */}
+      {/* ======================================================
+          SEARCH / FILTERS
+      ====================================================== */}
+
       <div className="relative mt-8">
         <div className="pointer-events-none absolute -left-20 top-0 h-32 w-32 rounded-full bg-cyan-400/[0.04] blur-[70px]" />
 
@@ -264,7 +329,10 @@ export default function JobsClient({
         </div>
       </div>
 
-      {/* Results Header */}
+      {/* ======================================================
+          RESULTS HEADER
+      ====================================================== */}
+
       <div className="mt-9 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
@@ -304,7 +372,27 @@ export default function JobsClient({
         </div>
       </div>
 
-      {/* Loading */}
+      {/* ======================================================
+          ACTIVE SEARCH INDICATOR
+      ====================================================== */}
+
+      {search.trim() && (
+        <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-cyan-400/10 bg-cyan-400/[0.04] px-3 py-1.5 text-[10px] text-cyan-300">
+          <SearchIndicatorIcon />
+
+          <span>
+            Searching for{" "}
+            <span className="font-semibold text-cyan-200">
+              "{search.trim()}"
+            </span>
+          </span>
+        </div>
+      )}
+
+      {/* ======================================================
+          LOADING
+      ====================================================== */}
+
       {loading && (
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
           {[1, 2, 3, 4].map((item) => (
@@ -316,7 +404,10 @@ export default function JobsClient({
         </div>
       )}
 
-      {/* Empty */}
+      {/* ======================================================
+          EMPTY
+      ====================================================== */}
+
       {!loading && jobs.length === 0 && (
         <div className="relative mt-6 overflow-hidden rounded-3xl border border-white/[0.07] bg-gradient-to-br from-[#0a101d] to-[#0d0917] p-14 text-center shadow-2xl shadow-black/20">
           <div className="pointer-events-none absolute left-1/2 top-0 h-48 w-48 -translate-x-1/2 rounded-full bg-cyan-400/[0.06] blur-[80px]" />
@@ -333,11 +424,24 @@ export default function JobsClient({
             <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
               Try a different job title, skill, company, or location.
             </p>
+
+            {search.trim() && (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="mt-6 inline-flex items-center gap-2 rounded-xl border border-cyan-400/15 bg-cyan-400/[0.05] px-4 py-2.5 text-xs font-semibold text-cyan-300 transition-all hover:border-cyan-400/30 hover:bg-cyan-400/[0.08] hover:text-cyan-200"
+              >
+                Clear search
+              </button>
+            )}
           </div>
         </div>
       )}
 
-      {/* Job Grid */}
+      {/* ======================================================
+          JOB GRID
+      ====================================================== */}
+
       {!loading && jobs.length > 0 && (
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
           {jobs.map((job) => {
@@ -368,7 +472,10 @@ export default function JobsClient({
                 <div className="pointer-events-none absolute left-8 right-8 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/20 to-transparent" />
 
                 <div className="relative flex flex-1 flex-col">
-                  {/* Company Header */}
+                  {/* ==================================================
+                      COMPANY HEADER
+                  ================================================== */}
+
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-cyan-400/15 bg-gradient-to-br from-cyan-400/[0.09] to-violet-500/[0.09] shadow-lg shadow-cyan-500/[0.025]">
@@ -421,12 +528,18 @@ export default function JobsClient({
                     </div>
                   </div>
 
-                  {/* Job Title */}
+                  {/* ==================================================
+                      JOB TITLE
+                  ================================================== */}
+
                   <h2 className="mt-7 text-xl font-semibold leading-7 tracking-tight text-white transition-colors duration-200 group-hover:text-cyan-50">
                     {job.title}
                   </h2>
 
-                  {/* Job Meta */}
+                  {/* ==================================================
+                      JOB META
+                  ================================================== */}
+
                   <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500">
                     {job.location && (
                       <span className="inline-flex items-center gap-1.5">
@@ -438,13 +551,18 @@ export default function JobsClient({
                     {job.jobType && (
                       <span className="inline-flex items-center gap-1.5">
                         <span className="h-1 w-1 rounded-full bg-slate-700" />
+
                         <Clock3 className="h-3.5 w-3.5 text-slate-600" />
+
                         {job.jobType}
                       </span>
                     )}
                   </div>
 
-                  {/* AI Match Panel */}
+                  {/* ==================================================
+                      AI MATCH PANEL
+                  ================================================== */}
+
                   {job.matchScore !== null && (
                     <div className="mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-[#090e17]/90">
                       {/* Panel Header */}
@@ -500,7 +618,7 @@ export default function JobsClient({
                         </div>
                       </div>
 
-                      {/* Skills */}
+                      {/* Matching Skills */}
                       {(job.matchedSkills?.length ?? 0) > 0 && (
                         <div className="border-t border-white/[0.05] px-4 py-3.5">
                           <p className="flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-emerald-400/80">
@@ -521,6 +639,7 @@ export default function JobsClient({
                         </div>
                       )}
 
+                      {/* Missing Skills */}
                       {(job.missingSkills?.length ?? 0) > 0 && (
                         <div className="border-t border-white/[0.05] px-4 py-3.5">
                           <p className="text-[9px] font-semibold uppercase tracking-[0.18em] text-slate-600">
@@ -542,14 +661,20 @@ export default function JobsClient({
                     </div>
                   )}
 
-                  {/* Description */}
+                  {/* ==================================================
+                      DESCRIPTION
+                  ================================================== */}
+
                   {description && (
                     <p className="mt-5 line-clamp-3 text-xs leading-6 text-slate-500">
                       {description}
                     </p>
                   )}
 
-                  {/* Footer */}
+                  {/* ==================================================
+                      FOOTER
+                  ================================================== */}
+
                   <div className="mt-auto pt-6">
                     <div className="border-t border-white/[0.06] pt-5">
                       <div className="flex items-end justify-between gap-4">
@@ -576,7 +701,10 @@ export default function JobsClient({
                         </div>
 
                         <div className="flex shrink-0 items-center gap-2">
-                          {/* Apply */}
+                          {/* ==================================================
+                              APPLY
+                          ================================================== */}
+
                           <button
                             type="button"
                             onClick={() => applyToJob(job.id)}
@@ -598,7 +726,10 @@ export default function JobsClient({
                             )}
                           </button>
 
-                          {/* Original Job */}
+                          {/* ==================================================
+                              ORIGINAL JOB
+                          ================================================== */}
+
                           {jobUrl ? (
                             <a
                               href={jobUrl}
@@ -625,7 +756,10 @@ export default function JobsClient({
         </div>
       )}
 
-      {/* Bottom Refresh */}
+      {/* ======================================================
+          BOTTOM REFRESH
+      ====================================================== */}
+
       {!loading && jobs.length > 0 && (
         <div className="mt-10 flex justify-center">
           <button
@@ -639,5 +773,18 @@ export default function JobsClient({
         </div>
       )}
     </>
+  );
+}
+
+/* ============================================================
+   SEARCH INDICATOR ICON
+============================================================ */
+
+function SearchIndicatorIcon() {
+  return (
+    <span className="relative flex h-3.5 w-3.5 items-center justify-center">
+      <span className="h-2.5 w-2.5 rounded-full border border-cyan-300" />
+      <span className="absolute bottom-0 right-0 h-1.5 w-px rotate-[-45deg] bg-cyan-300" />
+    </span>
   );
 }
