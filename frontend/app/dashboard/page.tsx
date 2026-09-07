@@ -1,4 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
 import { eq } from "drizzle-orm";
 
 import { db } from "@/lib/db";
@@ -11,7 +12,7 @@ import {
   projects,
 } from "@/lib/db/schema";
 
-import { UserButton } from "@clerk/nextjs";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 
 import Sidebar from "@/components/dashboard/Sidebar";
 import JobsSection from "@/components/dashboard/JobsSection";
@@ -42,10 +43,8 @@ export default async function DashboardPage() {
     lastName: user.lastName,
   });
 
-  const firstName = user.firstName || "there";
-
   // =======================================================
-  // Profile completion
+  // Database user
   // =======================================================
 
   const [dbUser] = await db
@@ -53,6 +52,15 @@ export default async function DashboardPage() {
     .from(users)
     .where(eq(users.clerkId, user.id))
     .limit(1);
+
+  /*
+   * The dashboard greeting should use the first name saved
+   * in Personal Information.
+   *
+   * We keep a Clerk fallback in case the profile has not been
+   * completed yet.
+   */
+  let firstName = user.firstName || "there";
 
   const totalSections = 6;
 
@@ -72,6 +80,25 @@ export default async function DashboardPage() {
       .from(profiles)
       .where(eq(profiles.userId, dbUser.id))
       .limit(1);
+
+    /*
+     * =======================================================
+     * PERSONAL INFORMATION NAME
+     *
+     * This is the important change.
+     *
+     * Personal Information page saves the editable name in:
+     *
+     * profiles.firstName
+     *
+     * So the dashboard now displays that value.
+     * =======================================================
+     */
+
+    firstName =
+      profile?.firstName?.trim() ||
+      user.firstName?.trim() ||
+      "there";
 
     const userSkills = await db
       .select()
@@ -467,7 +494,7 @@ function StatCard({
   description: string;
 }) {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-black/20 px-3 py-3 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/20 hover:bg-white/[0.035]">
+    <div className="group flex items-center gap-3 rounded-xl border border-white/[0.08] bg-black/20 px-3 py-3 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/20 hover:bg-white/[0.035]">
       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan-400/15 bg-cyan-400/[0.06] text-cyan-300 transition-all duration-300 group-hover:bg-cyan-400/[0.1]">
         {icon}
       </div>
