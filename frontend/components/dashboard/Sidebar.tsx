@@ -45,13 +45,26 @@ const navigation = [
   },
 ];
 
+const DAILY_APPLY_LIMIT = 5;
+
+type Application = {
+  id: string;
+  createdAt: string;
+  appliedAt?: string;
+  status?: string;
+};
+
 export default function Sidebar() {
   const { signOut } = useClerk();
   const pathname = usePathname();
 
   const [savedJobsCount, setSavedJobsCount] = useState(0);
+  const [dailyApplications, setDailyApplications] = useState(0);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
 
-  // Get saved jobs count
+  /*
+   * Get saved jobs count
+   */
   useEffect(() => {
     async function fetchSavedJobsCount() {
       try {
@@ -72,6 +85,87 @@ export default function Sidebar() {
     fetchSavedJobsCount();
   }, []);
 
+  /*
+   * Get today's real application count
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchDailyApplications() {
+      try {
+        setApplicationsLoading(true);
+
+        const response = await fetch("/api/applications", {
+          cache: "no-store",
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch applications");
+        }
+
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.applications)) {
+          throw new Error(data.error || "Failed to fetch applications");
+        }
+
+        /*
+         * Use the user's local calendar day.
+         *
+         * This is important because "today" should mean today
+         * for the person using JobBuddy, not UTC midnight.
+         */
+        const now = new Date();
+
+        const todayStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+
+        const tomorrowStart = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() + 1,
+        );
+
+        const todayCount = (data.applications as Application[]).filter(
+          (application) => {
+            const createdAt = new Date(application.createdAt);
+
+            return (
+              createdAt >= todayStart &&
+              createdAt < tomorrowStart
+            );
+          },
+        ).length;
+
+        if (!cancelled) {
+          setDailyApplications(todayCount);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to fetch daily application count:",
+          error,
+        );
+
+        if (!cancelled) {
+          setDailyApplications(0);
+        }
+      } finally {
+        if (!cancelled) {
+          setApplicationsLoading(false);
+        }
+      }
+    }
+
+    fetchDailyApplications();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname]);
+
   const isActive = (href: string) => {
     if (href === "/dashboard/jobs") {
       return (
@@ -83,6 +177,30 @@ export default function Sidebar() {
 
     return pathname === href || pathname.startsWith(`${href}/`);
   };
+
+  /*
+   * Daily application progress
+   */
+  const dailyApplyCount = Math.min(
+    dailyApplications,
+    DAILY_APPLY_LIMIT,
+  );
+
+  const dailyApplyPercentage =
+    DAILY_APPLY_LIMIT > 0
+      ? Math.min(
+          (dailyApplyCount / DAILY_APPLY_LIMIT) * 100,
+          100,
+        )
+      : 0;
+
+  const dailyLimitReached =
+    dailyApplications >= DAILY_APPLY_LIMIT;
+
+  const remainingApplications = Math.max(
+    DAILY_APPLY_LIMIT - dailyApplications,
+    0,
+  );
 
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 overflow-hidden border-r border-white/[0.07] bg-[#050810] lg:flex lg:flex-col">
@@ -179,17 +297,18 @@ export default function Sidebar() {
                 </span>
 
                 {/* Saved Jobs Count */}
-                {item.name === "Saved Jobs" && savedJobsCount > 0 && (
-                  <span
-                    className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
-                      active
-                        ? "border border-cyan-300/20 bg-cyan-400/10 text-cyan-300"
-                        : "bg-white/[0.08] text-slate-400"
-                    }`}
-                  >
-                    {savedJobsCount}
-                  </span>
-                )}
+                {item.name === "Saved Jobs" &&
+                  savedJobsCount > 0 && (
+                    <span
+                      className={`flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] font-bold ${
+                        active
+                          ? "border border-cyan-300/20 bg-cyan-400/10 text-cyan-300"
+                          : "bg-white/[0.08] text-slate-400"
+                      }`}
+                    >
+                      {savedJobsCount}
+                    </span>
+                  )}
 
                 {active && (
                   <ChevronRight className="h-3.5 w-3.5 shrink-0 text-cyan-300/60" />
@@ -235,7 +354,9 @@ export default function Sidebar() {
               />
             </div>
 
-            <span className="flex-1">Billing & Subscription</span>
+            <span className="flex-1">
+              Billing & Subscription
+            </span>
 
             {isActive("/dashboard/billing") && (
               <ChevronRight className="h-3.5 w-3.5 text-cyan-300/60" />
@@ -283,15 +404,28 @@ export default function Sidebar() {
       <div className="relative shrink-0">
         {/* Daily Apply Counter */}
         <div className="px-3 pb-4">
-          <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.035] via-white/[0.02] to-cyan-400/[0.025] p-4 shadow-xl shadow-black/10">
+          <div className="group relative overflow-hidden rounded-2xl border border-white/[0.07] bg-gradient-to-br from-white/[0.035] via-white/[0.02] to-cyan-400/[0.025] p-4 shadow-xl shadow-black/10 transition-all duration-300 hover:border-cyan-400/[0.14] hover:shadow-cyan-950/20">
             {/* Card glow */}
-            <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-cyan-400/[0.08] blur-[45px]" />
+            <div className="pointer-events-none absolute -right-10 -top-10 h-24 w-24 rounded-full bg-cyan-400/[0.08] blur-[45px] transition-all duration-500 group-hover:bg-cyan-400/[0.13]" />
 
             <div className="relative">
+              {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-cyan-400/15 bg-cyan-400/[0.06]">
-                    <BriefcaseBusiness className="h-3.5 w-3.5 text-cyan-300" />
+                  <div
+                    className={`flex h-7 w-7 items-center justify-center rounded-lg border transition-all duration-300 ${
+                      dailyLimitReached
+                        ? "border-amber-400/20 bg-amber-400/[0.07]"
+                        : "border-cyan-400/15 bg-cyan-400/[0.06]"
+                    }`}
+                  >
+                    <BriefcaseBusiness
+                      className={`h-3.5 w-3.5 ${
+                        dailyLimitReached
+                          ? "text-amber-300"
+                          : "text-cyan-300"
+                      }`}
+                    />
                   </div>
 
                   <span className="text-xs font-semibold text-slate-300">
@@ -304,34 +438,81 @@ export default function Sidebar() {
                 </span>
               </div>
 
+              {/* Counter */}
               <div className="mt-4 flex items-end justify-between">
                 <div>
-                  <span className="text-2xl font-bold tracking-tight text-white">
-                    0
-                  </span>
+                  {applicationsLoading ? (
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-7 w-7 animate-pulse rounded-md bg-white/[0.06]" />
+                      <div className="h-3 w-5 animate-pulse rounded bg-white/[0.05]" />
+                    </div>
+                  ) : (
+                    <>
+                      <span
+                        className={`text-2xl font-bold tracking-tight ${
+                          dailyLimitReached
+                            ? "text-amber-300"
+                            : "text-white"
+                        }`}
+                      >
+                        {dailyApplyCount}
+                      </span>
 
-                  <span className="ml-1 text-xs text-slate-600">
-                    / 5
-                  </span>
+                      <span className="ml-1 text-xs text-slate-600">
+                        / {DAILY_APPLY_LIMIT}
+                      </span>
+                    </>
+                  )}
                 </div>
 
-                <span className="text-[10px] font-medium text-slate-600">
-                  0 used
-                </span>
+                {!applicationsLoading && (
+                  <span
+                    className={`text-[10px] font-medium ${
+                      dailyLimitReached
+                        ? "text-amber-400"
+                        : "text-slate-600"
+                    }`}
+                  >
+                    {dailyLimitReached
+                      ? "Limit reached"
+                      : `${dailyApplications} used`}
+                  </span>
+                )}
               </div>
 
+              {/* Progress */}
               <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/[0.06]">
-                <div className="h-full w-0 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 shadow-[0_0_8px_rgba(34,211,238,0.35)]" />
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    dailyLimitReached
+                      ? "bg-gradient-to-r from-amber-400 to-orange-500 shadow-[0_0_8px_rgba(251,191,36,0.35)]"
+                      : "bg-gradient-to-r from-cyan-400 to-violet-500 shadow-[0_0_8px_rgba(34,211,238,0.35)]"
+                  }`}
+                  style={{
+                    width: `${dailyApplyPercentage}%`,
+                  }}
+                />
               </div>
 
+              {/* Footer */}
               <div className="mt-2 flex items-center justify-between">
                 <p className="text-[10px] text-slate-600">
-                  Free plan limit
+                  {dailyLimitReached
+                    ? "Daily free limit used"
+                    : `${remainingApplications} ${
+                        remainingApplications === 1
+                          ? "application"
+                          : "applications"
+                      } remaining`}
                 </p>
 
                 <Link
                   href="/dashboard/billing"
-                  className="text-[10px] font-semibold text-cyan-400 transition-colors hover:text-cyan-300"
+                  className={`text-[10px] font-semibold transition-colors ${
+                    dailyLimitReached
+                      ? "text-amber-400 hover:text-amber-300"
+                      : "text-cyan-400 hover:text-cyan-300"
+                  }`}
                 >
                   Upgrade
                 </Link>
