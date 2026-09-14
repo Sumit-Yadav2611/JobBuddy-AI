@@ -56,9 +56,6 @@ export default async function DashboardPage() {
   /*
    * The dashboard greeting should use the first name saved
    * in Personal Information.
-   *
-   * We keep a Clerk fallback in case the profile has not been
-   * completed yet.
    */
   let firstName = user.firstName || "there";
 
@@ -84,14 +81,6 @@ export default async function DashboardPage() {
     /*
      * =======================================================
      * PERSONAL INFORMATION NAME
-     *
-     * This is the important change.
-     *
-     * Personal Information page saves the editable name in:
-     *
-     * profiles.firstName
-     *
-     * So the dashboard now displays that value.
      * =======================================================
      */
 
@@ -187,24 +176,24 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050812] text-white">
+    <div className="min-h-screen bg-[#050607] text-white">
       {/* =====================================================
           AMBIENT BACKGROUND
       ===================================================== */}
 
       <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-        {/* Cyan */}
-        <div className="absolute left-[18%] top-[-10%] h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[140px]" />
+        {/* Soft red ambient light */}
+        <div className="absolute left-[18%] top-[-12%] h-[500px] w-[500px] rounded-full bg-red-600/[0.045] blur-[150px]" />
 
-        {/* Violet */}
-        <div className="absolute right-[-10%] top-[20%] h-[600px] w-[600px] rounded-full bg-violet-600/10 blur-[160px]" />
+        {/* Right red ambient light */}
+        <div className="absolute right-[-12%] top-[18%] h-[600px] w-[600px] rounded-full bg-red-700/[0.055] blur-[170px]" />
 
-        {/* Blue */}
-        <div className="absolute bottom-[-20%] left-[35%] h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[150px]" />
+        {/* Bottom subtle red light */}
+        <div className="absolute bottom-[-20%] left-[38%] h-[500px] w-[500px] rounded-full bg-rose-700/[0.035] blur-[160px]" />
 
         {/* Subtle grid */}
         <div
-          className="absolute inset-0 opacity-[0.035]"
+          className="absolute inset-0 opacity-[0.025]"
           style={{
             backgroundImage:
               "linear-gradient(rgba(255,255,255,0.7) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.7) 1px, transparent 1px)",
@@ -225,11 +214,11 @@ export default async function DashboardPage() {
             TOP HEADER
         =================================================== */}
 
-        <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-[#050812]/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 border-b border-white/[0.07] bg-[#050607]/80 backdrop-blur-xl">
           <div className="flex h-[76px] items-center justify-between gap-6 px-6 lg:px-8">
             {/* Page title */}
             <div className="min-w-0">
-              <p className="text-xs font-medium uppercase tracking-[0.2em] text-cyan-400">
+              <p className="text-xs font-medium uppercase tracking-[0.2em] text-red-400">
                 Dashboard
               </p>
 
@@ -240,7 +229,7 @@ export default async function DashboardPage() {
 
             {/* Search */}
             <div className="hidden max-w-md flex-1 md:block">
-              <div className="group flex h-11 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.035] px-4 transition-all duration-200 hover:border-cyan-400/30 hover:bg-white/[0.05]">
+              <div className="group flex h-11 items-center gap-3 rounded-xl border border-white/10 bg-white/[0.025] px-4 transition-all duration-300 hover:border-red-400/30 hover:bg-red-500/[0.025] hover:shadow-[0_0_25px_rgba(239,68,68,0.05)]">
                 <SearchIcon />
 
                 <input
@@ -249,7 +238,7 @@ export default async function DashboardPage() {
                   className="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
                 />
 
-                <span className="hidden rounded-md border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] text-slate-500 lg:block">
+                <span className="hidden rounded-md border border-white/10 bg-white/[0.035] px-2 py-1 text-[10px] text-slate-500 lg:block">
                   ⌘ K
                 </span>
               </div>
@@ -259,13 +248,13 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.035] text-slate-300 transition hover:border-cyan-400/30 hover:bg-white/[0.06] hover:text-white sm:flex"
+                className="hidden h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.025] text-slate-300 transition-all duration-300 hover:border-red-400/30 hover:bg-red-500/[0.035] hover:text-red-200 hover:shadow-[0_0_25px_rgba(239,68,68,0.08)] sm:flex"
                 aria-label="Notifications"
               >
                 <BellIcon />
               </button>
 
-              <div className="rounded-full border border-white/10 bg-white/[0.04] p-0.5">
+              <div className="rounded-full border border-white/10 bg-white/[0.035] p-0.5 transition-all duration-300 hover:border-red-400/30 hover:shadow-[0_0_20px_rgba(239,68,68,0.08)]">
                 <UserButton
                   appearance={{
                     elements: {
@@ -296,15 +285,15 @@ export default async function DashboardPage() {
 
                 <h2 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
                   Welcome back,{" "}
-                  <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-violet-500 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-red-300 via-rose-400 to-red-500 bg-clip-text text-transparent">
                     {firstName}!
                   </span>{" "}
-                  <span className="inline-block">👋</span>
+                 
                 </h2>
               </div>
 
-              <div className="hidden items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-4 py-2 text-xs text-emerald-300 lg:flex">
-                <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.8)]" />
+              <div className="hidden items-center gap-2 rounded-full border border-red-400/20 bg-red-400/[0.045] px-4 py-2 text-xs text-red-300 shadow-[0_0_25px_rgba(239,68,68,0.04)] lg:flex">
+                <span className="h-2 w-2 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.8)]" />
                 AI agent ready
               </div>
             </div>
@@ -314,44 +303,123 @@ export default async function DashboardPage() {
               AI HERO
           ================================================= */}
 
-          <section className="relative mb-7 overflow-hidden rounded-2xl border border-white/10 bg-[#0a1020]/90 shadow-2xl shadow-black/20">
-            {/* Hero glow */}
-            <div className="pointer-events-none absolute -right-20 -top-32 h-80 w-80 rounded-full bg-cyan-500/15 blur-[100px]" />
+          <section
+            className="
+              group relative mb-7 overflow-hidden rounded-2xl
+              border border-red-500/30
+              bg-gradient-to-br from-[#0c080a] via-[#0a0809] to-[#10090b]
+              shadow-[0_20px_70px_rgba(0,0,0,0.35)]
+              transition-all duration-500
+              hover:border-red-400/45
+              hover:shadow-[0_24px_90px_rgba(0,0,0,0.45),0_0_45px_rgba(239,68,68,0.055)]
+            "
+          >
+            {/* =================================================
+                PREMIUM RED AMBIENT LIGHT
+               
+                Very subtle red glow.
+                No dark overlay is placed over the right side.
+            ================================================== */}
 
-            <div className="pointer-events-none absolute -bottom-32 right-24 h-80 w-80 rounded-full bg-violet-600/20 blur-[110px]" />
+            <div className="pointer-events-none absolute -right-28 -top-28 h-[420px] w-[420px] rounded-full bg-red-600/[0.045] blur-[110px] transition-all duration-700 group-hover:bg-red-600/[0.075]" />
 
-            {/* Decorative rings */}
-            <div className="pointer-events-none absolute right-[-40px] top-1/2 hidden h-[320px] w-[320px] -translate-y-1/2 rounded-full border border-cyan-400/10 lg:block">
-              <div className="absolute inset-8 rounded-full border border-blue-400/10" />
+            <div className="pointer-events-none absolute -bottom-40 right-[18%] h-[360px] w-[360px] rounded-full bg-rose-600/[0.035] blur-[120px]" />
 
-              <div className="absolute inset-16 rounded-full border border-violet-400/10" />
+            {/* Very subtle premium grid inside hero */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-[0.035]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(rgba(255,255,255,0.45) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.45) 1px, transparent 1px)",
+                backgroundSize: "64px 64px",
+              }}
+            />
 
-              <div className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-3xl border border-cyan-300/20 bg-gradient-to-br from-cyan-400/20 to-violet-600/20 shadow-[0_0_70px_rgba(34,211,238,0.18)]">
+            {/* =================================================
+                DECORATIVE RED RINGS
+            ================================================== */}
+
+            <div
+              className="
+                pointer-events-none absolute right-[-55px] top-1/2
+                hidden h-[360px] w-[360px] -translate-y-1/2
+                rounded-full border border-red-400/[0.10]
+                transition-all duration-700
+                group-hover:border-red-400/[0.16]
+                lg:block
+              "
+            >
+              <div className="absolute inset-9 rounded-full border border-red-400/[0.08]" />
+
+              <div className="absolute inset-[72px] rounded-full border border-red-400/[0.07]" />
+
+              <div className="absolute inset-[105px] rounded-full border border-red-400/[0.05]" />
+
+              {/* Center icon container */}
+              <div
+                className="
+                  absolute left-1/2 top-1/2
+                  flex h-28 w-28 -translate-x-1/2 -translate-y-1/2
+                  items-center justify-center rounded-3xl
+                  border border-red-400/25
+                  bg-gradient-to-br from-red-500/[0.10] to-red-950/[0.10]
+                  shadow-[0_0_55px_rgba(239,68,68,0.10)]
+                  transition-all duration-500
+                  group-hover:scale-[1.035]
+                  group-hover:border-red-400/35
+                  group-hover:bg-red-500/[0.13]
+                  group-hover:shadow-[0_0_75px_rgba(239,68,68,0.16)]
+                "
+              >
                 <BriefcaseBusinessIcon />
               </div>
             </div>
 
+            {/* =================================================
+                HERO CONTENT
+            ================================================== */}
+
             <div className="relative p-6 sm:p-8">
               <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/20 bg-cyan-400/[0.06] px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-cyan-300">
+                {/* AI Badge */}
+                <div
+                  className="
+                    inline-flex items-center gap-2 rounded-full
+                    border border-red-400/25
+                    bg-red-500/[0.055]
+                    px-3 py-1.5
+                    text-[11px] font-semibold uppercase
+                    tracking-[0.18em] text-red-300
+                    shadow-[0_0_20px_rgba(239,68,68,0.04)]
+                    transition-all duration-300
+                    hover:border-red-400/40
+                    hover:bg-red-500/[0.08]
+                    hover:shadow-[0_0_25px_rgba(239,68,68,0.07)]
+                  "
+                >
                   <SparklesIcon />
                   AI Job Application Agent
                 </div>
 
+                {/* Main title */}
                 <h3 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
                   Find better jobs,
                   <br className="hidden sm:block" />
-                  <span className="bg-gradient-to-r from-white via-cyan-100 to-violet-300 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-white via-red-100 to-rose-300 bg-clip-text text-transparent">
                     faster with AI
                   </span>
                 </h3>
 
+                {/* Description */}
                 <p className="mt-4 max-w-xl text-sm leading-6 text-slate-400 sm:text-base">
                   Get personalized job matches, AI-powered insights, and
                   smarter tools to accelerate your job search.
                 </p>
 
-                {/* Quick stats */}
+                {/* =================================================
+                    QUICK STATS
+                ================================================== */}
+
                 <div className="mt-7 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
                   <StatCard
                     icon={<ProfileIcon />}
@@ -405,7 +473,16 @@ export default async function DashboardPage() {
 
                 <button
                   type="button"
-                  className="rounded-lg border border-white/10 bg-white/[0.035] px-4 py-2 text-sm text-slate-300 transition hover:border-cyan-400/30 hover:bg-white/[0.06] hover:text-white"
+                  className="
+                    rounded-lg border border-white/10
+                    bg-white/[0.025]
+                    px-4 py-2 text-sm text-slate-300
+                    transition-all duration-300
+                    hover:border-red-400/30
+                    hover:bg-red-500/[0.035]
+                    hover:text-white
+                    hover:shadow-[0_0_25px_rgba(239,68,68,0.06)]
+                  "
                 >
                   Manage
                 </button>
@@ -420,10 +497,30 @@ export default async function DashboardPage() {
                 ].map((platform) => (
                   <div
                     key={platform.name}
-                    className="group relative overflow-hidden rounded-xl border border-white/[0.08] bg-[#0a0f1b]/80 p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-cyan-400/20 hover:bg-[#0d1422]"
+                    className="
+                      group relative overflow-hidden rounded-xl
+                      border border-white/[0.08]
+                      bg-[#0a0b0d]/80 p-4
+                      transition-all duration-300
+                      hover:-translate-y-1
+                      hover:border-red-400/25
+                      hover:bg-[#100a0c]
+                      hover:shadow-[0_12px_35px_rgba(0,0,0,0.25),0_0_25px_rgba(239,68,68,0.04)]
+                    "
                   >
                     <div className="flex items-center justify-between">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.045] text-lg font-bold text-slate-200">
+                      <div
+                        className="
+                          flex h-10 w-10 items-center justify-center
+                          rounded-xl border border-white/10
+                          bg-white/[0.035]
+                          text-lg font-bold text-slate-200
+                          transition-all duration-300
+                          group-hover:border-red-400/20
+                          group-hover:bg-red-500/[0.055]
+                          group-hover:text-red-200
+                        "
+                      >
                         {platform.letter}
                       </div>
 
@@ -494,16 +591,47 @@ function StatCard({
   description: string;
 }) {
   return (
-    <div className="group flex items-center gap-3 rounded-xl border border-white/[0.08] bg-black/20 px-3 py-3 backdrop-blur-sm transition-all duration-300 hover:border-cyan-400/20 hover:bg-white/[0.035]">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-cyan-400/15 bg-cyan-400/[0.06] text-cyan-300 transition-all duration-300 group-hover:bg-cyan-400/[0.1]">
+    <div
+      className="
+        group relative flex items-center gap-3
+        overflow-hidden rounded-xl
+        border border-white/[0.08]
+        bg-black/20
+        px-3 py-3
+        backdrop-blur-sm
+        transition-all duration-300
+        hover:-translate-y-0.5
+        hover:border-red-400/25
+        hover:bg-red-500/[0.025]
+        hover:shadow-[0_10px_30px_rgba(0,0,0,0.25),0_0_25px_rgba(239,68,68,0.035)]
+      "
+    >
+      {/* Subtle hover light */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-red-500/[0.025] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+      <div
+        className="
+          relative flex h-10 w-10 shrink-0 items-center justify-center
+          rounded-lg border border-red-400/15
+          bg-red-400/[0.045]
+          text-red-300
+          transition-all duration-300
+          group-hover:border-red-400/25
+          group-hover:bg-red-400/[0.085]
+          group-hover:text-red-200
+          group-hover:shadow-[0_0_22px_rgba(239,68,68,0.09)]
+        "
+      >
         {icon}
       </div>
 
-      <div className="min-w-0">
+      <div className="relative min-w-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold">{value}</span>
 
-          <span className="truncate text-xs text-slate-500">{label}</span>
+          <span className="truncate text-xs text-slate-500">
+            {label}
+          </span>
         </div>
 
         <p className="mt-0.5 truncate text-[11px] text-slate-500">
@@ -525,7 +653,7 @@ function SearchIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
-      className="h-4 w-4 shrink-0 text-slate-500"
+      className="h-4 w-4 shrink-0 text-slate-500 transition-colors duration-300 group-hover:text-red-300"
     >
       <circle cx="11" cy="11" r="6.5" />
       <path d="m16 16 4 4" />
@@ -544,7 +672,7 @@ function BellIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.8"
-      className="h-5 w-5"
+      className="h-5 w-5 transition-transform duration-300"
     >
       <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9" />
       <path d="M10 21h4" />
@@ -563,7 +691,7 @@ function BriefcaseBusinessIcon() {
       fill="none"
       stroke="currentColor"
       strokeWidth="1.5"
-      className="h-12 w-12 text-cyan-300"
+      className="h-12 w-12 text-red-300 transition-all duration-500"
     >
       <rect width="18" height="14" x="3" y="7" rx="2" />
       <path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />

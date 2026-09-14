@@ -91,10 +91,21 @@ export default function ProfileCompleteness({
         shadow-2xl shadow-black/25
         backdrop-blur-xl
         transition-all duration-500
-        hover:border-cyan-400/20
-        hover:shadow-[0_20px_70px_rgba(34,211,238,0.07)]
+        hover:-translate-y-1
+        hover:border-red-400/30
+        hover:shadow-[0_24px_80px_rgba(239,68,68,0.12)]
       "
     >
+      {/* Premium inner highlight */}
+      <div
+        className="
+          pointer-events-none absolute inset-0 rounded-3xl
+          border border-white/[0.025]
+          bg-gradient-to-b from-white/[0.025] via-transparent to-transparent
+          opacity-70
+        "
+      />
+
       {/* =========================================================
           BACKGROUND LIGHTING
       ========================================================= */}
@@ -104,10 +115,10 @@ export default function ProfileCompleteness({
         className="
           pointer-events-none absolute -right-28 -top-28
           h-80 w-80 rounded-full
-          bg-cyan-400/[0.10]
+          bg-red-400/[0.10]
           blur-[110px]
           transition-transform duration-700
-          group-hover:scale-125
+          group-hover:scale-125 group-hover:opacity-100
         "
       />
 
@@ -116,7 +127,7 @@ export default function ProfileCompleteness({
         className="
           pointer-events-none absolute right-1/3 top-1/4
           h-56 w-56 rounded-full
-          bg-blue-500/[0.045]
+          bg-red-500/[0.045]
           blur-[100px]
         "
       />
@@ -126,10 +137,10 @@ export default function ProfileCompleteness({
         className="
           pointer-events-none absolute -bottom-28 -left-24
           h-80 w-80 rounded-full
-          bg-violet-500/[0.10]
+          bg-red-500/[0.10]
           blur-[110px]
           transition-transform duration-700
-          group-hover:scale-125
+          group-hover:scale-125 group-hover:opacity-100
         "
       />
 
@@ -138,9 +149,9 @@ export default function ProfileCompleteness({
         className="
           pointer-events-none absolute inset-0
           bg-gradient-to-br
-          from-cyan-400/[0.015]
+          from-red-400/[0.015]
           via-transparent
-          to-violet-500/[0.025]
+          to-red-500/[0.025]
         "
       />
 
@@ -162,18 +173,18 @@ export default function ProfileCompleteness({
         <div className="flex items-start justify-between gap-5">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(34,211,238,0.9)]" />
+              <span className="h-1.5 w-1.5 rounded-full bg-red-300 shadow-[0_0_10px_rgba(239,68,68,0.9)]" />
 
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-cyan-300">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-red-300">
                 Profile
               </p>
             </div>
 
-            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white">
+            <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white transition-colors duration-300 group-hover:text-red-50">
               Profile Completion
             </h2>
 
-            <p className="mt-2 max-w-[300px] text-sm leading-6 text-slate-500">
+            <p className="mt-2 max-w-[300px] text-sm leading-6 text-slate-500 transition-colors duration-300 group-hover:text-slate-400">
               Complete your profile to improve job matches and unlock better
               career recommendations.
             </p>
@@ -184,24 +195,24 @@ export default function ProfileCompleteness({
             className="
               relative flex h-12 w-12 shrink-0 items-center justify-center
               rounded-2xl
-              border border-cyan-400/20
-              bg-gradient-to-br from-cyan-400/[0.12] to-blue-500/[0.05]
-              shadow-lg shadow-cyan-500/[0.08]
+              border border-red-400/20
+              bg-gradient-to-br from-red-400/[0.12] to-red-500/[0.05]
+              shadow-lg shadow-red-500/[0.08]
               transition-all duration-300
-              group-hover:border-cyan-400/35
-              group-hover:bg-cyan-400/[0.12]
-              group-hover:shadow-[0_0_30px_rgba(34,211,238,0.12)]
+              group-hover:border-red-400/35
+              group-hover:bg-red-400/[0.12]
+              group-hover:shadow-[0_0_30px_rgba(239,68,68,0.12)]
             "
           >
             <Sparkles
               className="
-                h-5 w-5 text-cyan-300
-                transition-transform duration-500
+                h-5 w-5 text-red-300
+                transition-all duration-500 ease-out
                 group-hover:rotate-12 group-hover:scale-110
               "
             />
 
-            <span className="pointer-events-none absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_8px_rgba(34,211,238,0.9)]" />
+            <span className="pointer-events-none absolute -right-1 -top-1 h-1.5 w-1.5 rounded-full bg-red-300 shadow-[0_0_8px_rgba(239,68,68,0.9)]" />
           </div>
         </div>
 
@@ -215,15 +226,15 @@ export default function ProfileCompleteness({
             className="
               relative flex h-36 w-36 shrink-0 items-center justify-center
               rounded-full
-              transition-transform duration-500
-              group-hover:scale-[1.03]
+              transition-all duration-500 ease-out
+              group-hover:scale-[1.04] group-hover:drop-shadow-[0_0_22px_rgba(239,68,68,0.12)]
             "
             style={{
               background: `conic-gradient(
                 from -90deg,
-                #22d3ee 0deg,
-                #3b82f6 ${Math.min(progressDegrees * 0.55, progressDegrees)}deg,
-                #8b5cf6 ${progressDegrees}deg,
+                #ef4444 0deg,
+                #dc2626 ${Math.min(progressDegrees * 0.55, progressDegrees)}deg,
+                #991b1b ${progressDegrees}deg,
                 rgba(255,255,255,0.07) ${progressDegrees}deg,
                 rgba(255,255,255,0.07) 360deg
               )`,
@@ -238,8 +249,8 @@ export default function ProfileCompleteness({
               style={{
                 background: `conic-gradient(
                   from -90deg,
-                  #22d3ee 0deg,
-                  #8b5cf6 ${progressDegrees}deg,
+                  #ef4444 0deg,
+                  #991b1b ${progressDegrees}deg,
                   transparent ${progressDegrees}deg,
                   transparent 360deg
                 )`,
@@ -258,7 +269,7 @@ export default function ProfileCompleteness({
 
             {/* Inner content */}
             <div className="relative z-10 flex flex-col items-center justify-center">
-              <span className="text-[2.15rem] font-bold tracking-tight text-white">
+              <span className="text-[2.15rem] font-bold tracking-tight text-white transition-transform duration-300 group-hover:scale-105">
                 {percentage}%
               </span>
 
@@ -275,20 +286,20 @@ export default function ProfileCompleteness({
                 className={`h-1.5 w-1.5 rounded-full ${
                   isComplete
                     ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)]"
-                    : "bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]"
+                    : "bg-red-400 shadow-[0_0_10px_rgba(239,68,68,0.8)]"
                 }`}
               />
 
               <span
                 className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${
-                  isComplete ? "text-emerald-300" : "text-cyan-300"
+                  isComplete ? "text-emerald-300" : "text-red-300"
                 }`}
               >
                 {isComplete ? "Fully optimized" : "In progress"}
               </span>
             </div>
 
-            <p className="mt-4 text-lg font-semibold text-white">
+            <p className="mt-4 text-lg font-semibold text-white transition-colors duration-300 group-hover:text-red-50">
               {isComplete
                 ? "Profile complete! 🎉"
                 : isStrong
@@ -305,7 +316,7 @@ export default function ProfileCompleteness({
             </p>
 
             <div className="mt-4 flex items-baseline gap-1.5">
-              <span className="text-sm font-bold text-cyan-300">
+              <span className="text-sm font-bold text-red-300">
                 {completed}
               </span>
 
@@ -347,8 +358,10 @@ export default function ProfileCompleteness({
                   border border-transparent
                   px-3 py-2.5
                   transition-all duration-300
-                  hover:border-white/[0.05]
-                  hover:bg-white/[0.025]
+                  hover:-translate-y-0.5
+                  hover:border-red-400/[0.16]
+                  hover:bg-red-400/[0.035]
+                  hover:shadow-[0_8px_24px_rgba(239,68,68,0.05)]
                 "
               >
                 <div className="flex min-w-0 items-center gap-3">
@@ -358,16 +371,17 @@ export default function ProfileCompleteness({
                       className="
                         flex h-7 w-7 shrink-0 items-center justify-center
                         rounded-full
-                        border border-cyan-400/25
-                        bg-cyan-400/[0.08]
-                        shadow-[0_0_16px_rgba(34,211,238,0.04)]
+                        border border-red-400/25
+                        bg-red-400/[0.08]
+                        shadow-[0_0_16px_rgba(239,68,68,0.04)]
                         transition-all duration-300
-                        group-hover/item:border-cyan-400/40
-                        group-hover/item:bg-cyan-400/[0.12]
-                        group-hover/item:shadow-[0_0_18px_rgba(34,211,238,0.10)]
+                        group-hover/item:border-red-400/40
+                        group-hover/item:bg-red-400/[0.12]
+                        group-hover/item:shadow-[0_0_22px_rgba(239,68,68,0.16)]
+                        group-hover/item:scale-105
                       "
                     >
-                      <CheckCircle2 className="h-4 w-4 text-cyan-300" />
+                      <CheckCircle2 className="h-4 w-4 text-red-300" />
                     </div>
                   ) : (
                     <div
@@ -377,11 +391,11 @@ export default function ProfileCompleteness({
                         border border-slate-600/60
                         bg-slate-900/70
                         transition-all duration-300
-                        group-hover/item:border-violet-400/30
-                        group-hover/item:bg-violet-500/[0.05]
+                        group-hover/item:border-red-400/30
+                        group-hover/item:bg-red-500/[0.05]
                       "
                     >
-                      <CircleAlert className="h-4 w-4 text-slate-500 transition-colors group-hover/item:text-violet-400" />
+                      <CircleAlert className="h-4 w-4 text-slate-500 transition-colors group-hover/item:text-red-300 group-hover/item:scale-110" />
                     </div>
                   )}
 
@@ -404,10 +418,10 @@ export default function ProfileCompleteness({
                       ml-3 shrink-0 rounded-lg
                       px-2.5 py-1.5
                       text-[11px] font-semibold
-                      text-violet-400
+                      text-red-400
                       transition-all duration-200
-                      hover:bg-violet-400/[0.08]
-                      hover:text-violet-300
+                      hover:bg-red-400/[0.08]
+                      hover:text-red-300
                     "
                   >
                     Update
@@ -432,21 +446,21 @@ export default function ProfileCompleteness({
             group/button relative mt-7 flex w-full
             items-center justify-center gap-2
             overflow-hidden rounded-2xl
-            border border-cyan-400/20
+            border border-red-400/20
             bg-gradient-to-r
-            from-cyan-400/[0.08]
-            via-blue-500/[0.06]
-            to-violet-500/[0.09]
+            from-red-400/[0.08]
+            via-red-500/[0.06]
+            to-red-500/[0.09]
             px-4 py-3.5
             text-sm font-semibold text-white
-            shadow-lg shadow-cyan-500/[0.03]
+            shadow-lg shadow-red-500/[0.03]
             transition-all duration-300
             hover:-translate-y-0.5
-            hover:border-cyan-400/40
-            hover:from-cyan-400/[0.14]
-            hover:via-blue-500/[0.10]
-            hover:to-violet-500/[0.15]
-            hover:shadow-[0_10px_35px_rgba(34,211,238,0.08)]
+            hover:border-red-400/40
+            hover:from-red-400/[0.14]
+            hover:via-red-500/[0.10]
+            hover:to-red-500/[0.15]
+            hover:shadow-[0_12px_40px_rgba(239,68,68,0.14)]
           "
         >
           {/* Button shine */}
@@ -466,7 +480,7 @@ export default function ProfileCompleteness({
 
           <ArrowRight
             className="
-              relative z-10 h-4 w-4 text-cyan-300
+              relative z-10 h-4 w-4 text-red-300
               transition-transform duration-300
               group-hover/button:translate-x-1
             "
