@@ -1,10 +1,10 @@
 # JobBuddy AI
 
-> An AI-powered job search and career management platform designed to help candidates discover relevant opportunities, understand their resume, manage their profile, save jobs, and track applications in one place.
+
 
 <p align="center">
   <img
-    src="./banner.png"
+    src="./Job-buddy-ai/public/JobBuddy-ai-banner.png"
     alt="JobBuddy AI - AI-powered career and job search platform"
     width="100%"
   />
