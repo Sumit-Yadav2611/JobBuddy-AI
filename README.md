@@ -11,6 +11,8 @@
 </p>
 
 ## Overview
+Live Demo ->
+https://job-buddy-ai-blue.vercel.app
 
 JobBuddy AI is a full-stack web application built to simplify the modern job-search process.
 
